@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import { supabase } from '../lib/supabase';
 
-const AdminMenu = ({ onClose }: { onClose: () => void }) => {
+interface AdminMenuProps {
+  date: string;
+  onClose: () => void;
+}
+
+export default function AdminMenu({ date, onClose }: AdminMenuProps) {
   const [pw, setPw] = useState('');
   const [isAuth, setIsAuth] = useState(false);
-  const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState({ homework: '', notice: '', items: '', is_important: false });
 
@@ -66,7 +70,7 @@ const AdminMenu = ({ onClose }: { onClose: () => void }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-2">
               <label className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">対象日</label>
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full p-3 bg-slate-50 border-none rounded font-bold outline-none focus:ring-1 focus:ring-slate-200" />
+              <input type="date" value={date} disabled className="w-full p-3 bg-slate-50 border-none rounded font-bold outline-none focus:ring-1 focus:ring-slate-200" />
             </div>
             <div className="flex items-end">
               <label className={`flex items-center gap-3 w-full p-3 border rounded cursor-pointer transition ${form.is_important ? 'bg-red-50 border-red-100' : 'bg-slate-50 border-transparent'}`}>
@@ -92,5 +96,3 @@ const EditSection = ({ label, value, onChange, placeholder }: any) => (
     <textarea placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} className="w-full p-4 bg-slate-50 border-none rounded min-h-[120px] outline-none focus:ring-1 focus:ring-slate-200 font-medium text-slate-700" />
   </div>
 );
-
-export default AdminMenu;
