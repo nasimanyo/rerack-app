@@ -43,7 +43,7 @@ export default function Home() {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // --- データ取得 ---
+  // --- データ取得：お知らせ ---
   useEffect(() => {
     const fetchNotices = async () => {
       const { data } = await supabase
@@ -58,6 +58,7 @@ export default function Home() {
     fetchNotices();
   }, []);
 
+  // --- データ取得：宿題内容 ---
   useEffect(() => {
     const fetchPost = async () => {
       setLoading(true);
@@ -68,7 +69,7 @@ export default function Home() {
     fetchPost();
   }, [selectedDate]);
 
-  // 卒業カウントダウン
+  // 卒業カウントダウン計算
   const daysToGraduation = differenceInDays(new Date("2026-03-24"), new Date());
 
   // --- ハンドラー ---
@@ -78,7 +79,8 @@ export default function Home() {
   };
 
   const handleAdminLogin = () => {
-    if (passwordInput === "1234") { // 必要に応じてパスワードを変更
+    // パスワードを nasimanyo1209 に設定
+    if (passwordInput === "Nasi-man-yo1209") {
       setIsAdminAuthenticated(true);
     } else {
       alert("パスワードが違います");
@@ -127,7 +129,7 @@ export default function Home() {
               既読にする
             </button>
           </div>
-          <div className="max-h-96 overflow-y-auto">
+          <div className="max-h-96 overflow-y-auto font-sans">
             {notices.length > 0 ? notices.map((notice) => (
               <div key={notice.id} className="p-4 border-b border-gray-50 hover:bg-blue-50 transition">
                 <p className="text-[10px] text-gray-400 font-bold mb-1">{format(new Date(notice.created_at), "yyyy/MM/dd")}</p>
@@ -135,7 +137,7 @@ export default function Home() {
                 <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">{notice.content}</p>
               </div>
             )) : (
-              <p className="p-8 text-center text-xs text-gray-400 font-sans">お知らせはありません</p>
+              <p className="p-8 text-center text-xs text-gray-400">お知らせはありません</p>
             )}
           </div>
           <button onClick={() => setIsNoticeOpen(false)} className="w-full py-3 text-xs font-bold text-gray-400 hover:text-black">閉じる</button>
@@ -149,7 +151,7 @@ export default function Home() {
 
       {/* 📱 タブナビゲーション */}
       <div className="max-w-md mx-auto pt-24 px-4">
-        <div className="flex bg-white p-1 rounded-2xl shadow-md border border-gray-100">
+        <div className="flex bg-white p-1 rounded-2xl shadow-md border border-gray-100 font-sans">
           <button onClick={() => setActiveTab("home")} className={`flex-1 py-3 rounded-xl font-bold transition ${activeTab === "home" ? "bg-black text-white shadow-lg" : "text-gray-400"}`}>🏠 ホーム</button>
           <button onClick={() => setActiveTab("homework")} className={`flex-1 py-3 rounded-xl font-bold transition ${activeTab === "homework" ? "bg-black text-white shadow-lg" : "text-gray-400"}`}>📝 宿題</button>
           <button onClick={() => setActiveTab("admin")} className={`flex-1 py-3 rounded-xl font-bold transition ${activeTab === "admin" ? "bg-black text-white shadow-lg" : "text-gray-400"}`}>⚙️ 管理</button>
@@ -166,7 +168,7 @@ export default function Home() {
             <div className="mt-8 p-10 bg-red-50 rounded-[2.5rem] border-4 border-red-100">
               <p className="text-red-500 font-serif font-bold text-2xl mb-2 italic">卒業まで あと</p>
               <p className="text-[10rem] leading-none font-serif font-black text-red-600 italic">
-                {daysToGraduation}<span className="text-4xl not-italic ml-2 text-red-400">日</span>
+                {daysToGraduation}<span className="text-4xl not-italic ml-2 text-red-400 font-sans">日</span>
               </p>
             </div>
           </div>
@@ -215,36 +217,34 @@ export default function Home() {
         {activeTab === "admin" && (
           <div className="animate-in slide-in-from-bottom duration-300">
             {!isAdminAuthenticated ? (
-              <div className="bg-white rounded-[2.5rem] shadow-xl p-10 border-4 border-black text-center max-w-md mx-auto">
+              <div className="bg-white rounded-[2.5rem] shadow-xl p-10 border-4 border-black text-center max-w-md mx-auto font-sans">
                 <span className="text-4xl mb-4 block">🔒</span>
-                <h2 className="text-xl font-black mb-6 font-sans">管理者認証</h2>
+                <h2 className="text-xl font-black mb-6">管理者認証</h2>
                 <input
                   type="password"
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
                   placeholder="パスワードを入力"
-                  className="w-full p-4 rounded-2xl border-2 border-gray-100 mb-4 text-center font-bold focus:border-black outline-none font-sans"
+                  className="w-full p-4 rounded-2xl border-2 border-gray-100 mb-4 text-center font-bold focus:border-black outline-none"
                 />
-                <button onClick={handleAdminLogin} className="w-full py-4 bg-black text-white rounded-2xl font-black shadow-lg hover:bg-gray-800 active:scale-95 transition font-sans">
+                <button onClick={handleAdminLogin} className="w-full py-4 bg-black text-white rounded-2xl font-black shadow-lg hover:bg-gray-800 active:scale-95 transition">
                   認証する
                 </button>
               </div>
             ) : (
               <div className="bg-white rounded-[2.5rem] shadow-xl p-8 border-4 border-dashed border-gray-200 relative font-sans">
-                <button onClick={() => setIsAdminAuthenticated(false)} className="absolute top-4 right-6 text-xs font-bold text-gray-400 hover:text-red-500">ログアウト</button>
+                <button onClick={() => setIsAdminAuthenticated(false)} className="absolute top-4 right-6 text-xs font-bold text-gray-400 hover:text-red-500 transition">ログアウト</button>
                 <h2 className="text-xl font-black mb-6 text-center text-gray-400 uppercase tracking-widest">Date select & Edit</h2>
                 
-                {/* カレンダーの表示崩れ対策コンテナ */}
-                <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100 mb-8 max-w-md mx-auto shadow-inner">
-                  <div className="w-full flex justify-center">
-                    <div className="w-full min-w-[320px]">
-                      <Calendar 
-                        onDateClick={(date: any) => {
-                          const d = typeof date.format === 'function' ? date.format("YYYY-MM-DD") : format(date, "yyyy-MM-dd");
-                          setSelectedDate(d);
-                        }}
-                      />
-                    </div>
+                {/* カレンダー表示崩れ対策 */}
+                <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100 mb-8 max-w-md mx-auto shadow-inner flex justify-center">
+                  <div className="w-full min-w-[320px]">
+                    <Calendar 
+                      onDateClick={(date: any) => {
+                        const d = typeof date.format === 'function' ? date.format("YYYY-MM-DD") : format(date, "yyyy-MM-dd");
+                        setSelectedDate(d);
+                      }}
+                    />
                   </div>
                 </div>
 
@@ -263,14 +263,14 @@ export default function Home() {
               value={noteInput}
               onChange={(e) => setNoteInput(e.target.value)}
               placeholder="メモを貼る..."
-              className="flex-1 px-4 py-2 border-none font-bold outline-none font-sans"
+              className="flex-1 px-4 py-2 border-none font-bold outline-none"
             />
             <button onClick={addNote} className="bg-black text-white px-6 py-2 rounded-xl font-black shadow-lg active:scale-95 transition">貼る</button>
           </div>
           <div className="flex flex-wrap gap-4 justify-center">
             {notes.map((note) => (
               <div key={note.id} onClick={() => setNotes(notes.filter(n => n.id !== note.id))} className={`${note.color} w-32 h-32 p-3 shadow-xl transform rotate-2 hover:rotate-0 transition-all cursor-pointer flex items-center justify-center text-center font-bold border-b-4 border-black/10 active:scale-90`}>
-                <p className="text-sm text-gray-800 break-all leading-tight font-sans">{note.text}</p>
+                <p className="text-sm text-gray-800 break-all leading-tight">{note.text}</p>
               </div>
             ))}
           </div>
