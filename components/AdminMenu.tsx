@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import dayjs from 'dayjs';
-import { supabase } from '../lib/supabase';
+// components/AdminMenu.tsx
+"use client";
+
+import { useState } from "react";
+import { supabase } from "../lib/supabase";
 
 interface AdminMenuProps {
   date: string;
@@ -8,91 +10,91 @@ interface AdminMenuProps {
 }
 
 export default function AdminMenu({ date, onClose }: AdminMenuProps) {
-  const [pw, setPw] = useState('');
-  const [isAuth, setIsAuth] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [form, setForm] = useState({ homework: '', notice: '', items: '', is_important: false });
+  // その日の予定用
+  const [homework, setHomework] = useState("");
+  const [items, setItems] = useState("");
+  const [notice, setNotice] = useState("");
+  
+  // 運営からのお知らせ用
+  const [adminTitle, setAdminTitle] = useState("");
+  const [adminContent, setAdminContent] = useState("");
+  const [isPublishing, setIsPublishing] = useState(false);
 
-  useEffect(() => {
-    if (isAuth) {
-      const loadData = async () => {
-        const { data } = await supabase.from('posts').select('*').eq('date', date).single();
-        if (data) setForm({ homework: data.homework || '', notice: data.notice || '', items: data.items || '', is_important: data.is_important });
-        else setForm({ homework: '', notice: '', items: '', is_important: false });
-      };
-      loadData();
-    }
-  }, [date, isAuth]);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pw === 'admin') setIsAuth(true);
-    else alert('パスワードが違います');
+  // その日の予定を保存する関数（既存）
+  const saveDailyPost = async () => {
+    const { error } = await supabase.from("posts").upsert({
+      date,
+      homework,
+      items,
+      notice,
+    });
+    if (error) alert("保存に失敗しました");
+    else alert("その日の予定を更新しました");
   };
 
-  const save = async () => {
-    setIsSaving(true);
-    const { error } = await supabase.from('posts').upsert({ date, ...form });
-    setIsSaving(false);
-    if (error) alert('保存に失敗しました');
-    else {
-      onClose();
-      window.location.reload();
+  // 運営からのお知らせを投稿する関数（新規）
+  const publishNotice = async () => {
+    if (!adminTitle || !adminContent) return alert("タイトルと内容を入力してください");
+    
+    setIsPublishing(true);
+    const { error } = await supabase.from("notices").insert([
+      { title: adminTitle, content: adminContent }
+    ]);
+    
+    if (error) {
+      alert("投稿に失敗しました");
+    } else {
+      alert("全体へのお知らせを投稿しました！");
+      setAdminTitle("");
+      setAdminContent("");
     }
+    setIsPublishing(false);
   };
-
-  if (!isAuth) return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur flex items-center justify-center p-6 z-[60]">
-      <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-sm">
-        <h2 className="text-xl font-bold text-slate-800 mb-6 text-center">管理者ログイン</h2>
-        <form onSubmit={handleLogin} className="space-y-4">
-          <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded outline-none focus:border-slate-400 transition text-sm font-medium" placeholder="パスワードを入力" autoFocus />
-          <button className="w-full bg-slate-900 text-white py-3 rounded font-bold hover:bg-slate-800 transition">ログイン</button>
-          <button type="button" onClick={onClose} className="w-full text-slate-400 text-sm font-medium">キャンセル</button>
-        </form>
-      </div>
-    </div>
-  );
 
   return (
-    <div className="fixed inset-0 bg-slate-50 overflow-y-auto z-[60]">
-      <div className="max-w-2xl mx-auto min-h-screen flex flex-col shadow-xl bg-white">
-        <header className="px-6 py-4 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10">
-          <h2 className="font-bold text-slate-800">内容の編集</h2>
-          <div className="flex gap-4">
-            <button onClick={onClose} className="text-slate-400 text-sm font-bold">戻る</button>
-            <button onClick={save} disabled={isSaving} className={`px-6 py-2 rounded font-bold text-sm transition ${isSaving ? 'bg-slate-100 text-slate-400' : 'bg-slate-900 text-white'}`}>
-              {isSaving ? '保存中...' : '更新'}
-            </button>
-          </div>
-        </header>
-        <main className="p-8 space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">対象日</label>
-              <input type="date" value={date} disabled className="w-full p-3 bg-slate-50 border-none rounded font-bold outline-none focus:ring-1 focus:ring-slate-200" />
-            </div>
-            <div className="flex items-end">
-              <label className={`flex items-center gap-3 w-full p-3 border rounded cursor-pointer transition ${form.is_important ? 'bg-red-50 border-red-100' : 'bg-slate-50 border-transparent'}`}>
-                <input type="checkbox" checked={form.is_important} onChange={(e) => setForm({...form, is_important: e.target.checked})} className="w-4 h-4 accent-red-600" />
-                <span className={`text-sm font-bold ${form.is_important ? 'text-red-700' : 'text-slate-500'}`}>重要マークをつける</span>
-              </label>
-            </div>
-          </div>
-          <div className="space-y-6">
-            <EditSection label="宿題" value={form.homework} onChange={(v: string) => setForm({...form, homework: v})} />
-            <EditSection label="連絡" value={form.notice} onChange={(v: string) => setForm({...form, notice: v})} />
-            <EditSection label="持ち物" value={form.items} placeholder="例: 水筒, タオル (カンマで区切る)" onChange={(v: string) => setForm({...form, items: v})} />
-          </div>
-        </main>
+    <div className="space-y-8 font-sans">
+      {/* その日の予定セクション */}
+      <div className="p-6 bg-gray-50 rounded-2xl border-2 border-black">
+        <h3 className="font-black mb-4 flex items-center gap-2">
+          <span>📅</span> {date} の予定を編集
+        </h3>
+        <div className="space-y-3">
+          <input className="w-full p-3 rounded-xl border" placeholder="宿題" onChange={(e) => setHomework(e.target.value)} />
+          <input className="w-full p-3 rounded-xl border" placeholder="持ち物" onChange={(e) => setItems(e.target.value)} />
+          <textarea className="w-full p-3 rounded-xl border" placeholder="お知らせ" onChange={(e) => setNotice(e.target.value)} />
+          <button onClick={saveDailyPost} className="w-full py-3 bg-black text-white rounded-xl font-black">更新する</button>
+        </div>
       </div>
+
+      {/* 運営からのお知らせセクション（新規追加） */}
+      <div className="p-6 bg-blue-50 rounded-2xl border-2 border-blue-200">
+        <h3 className="font-black text-blue-700 mb-4 flex items-center gap-2">
+          <span>📢</span> 運営からのお知らせを投稿
+        </h3>
+        <div className="space-y-3">
+          <input 
+            className="w-full p-3 rounded-xl border-2 border-blue-100 focus:border-blue-400 outline-none" 
+            placeholder="お知らせのタイトル" 
+            value={adminTitle}
+            onChange={(e) => setAdminTitle(e.target.value)}
+          />
+          <textarea 
+            className="w-full p-3 rounded-xl border-2 border-blue-100 focus:border-blue-400 outline-none min-h-[100px]" 
+            placeholder="お知らせの詳細内容..." 
+            value={adminContent}
+            onChange={(e) => setAdminContent(e.target.value)}
+          />
+          <button 
+            onClick={publishNotice} 
+            disabled={isPublishing}
+            className="w-full py-3 bg-blue-600 text-white rounded-xl font-black shadow-lg hover:bg-blue-700 active:scale-95 transition disabled:bg-gray-400"
+          >
+            {isPublishing ? "投稿中..." : "全体に周知する"}
+          </button>
+        </div>
+      </div>
+
+      <button onClick={onClose} className="w-full py-3 text-gray-400 font-bold">閉じる</button>
     </div>
   );
-};
-
-const EditSection = ({ label, value, onChange, placeholder }: any) => (
-  <div className="space-y-2">
-    <label className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">{label}</label>
-    <textarea placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} className="w-full p-4 bg-slate-50 border-none rounded min-h-[120px] outline-none focus:ring-1 focus:ring-slate-200 font-medium text-slate-700" />
-  </div>
-);
+}

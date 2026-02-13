@@ -14,6 +14,13 @@ interface StickyNote {
   color: string;
 }
 
+interface Notice {
+  id: number;
+  title: string;
+  content: string;
+  date: string;
+}
+
 type TabType = "home" | "homework" | "admin";
 
 export default function Home() {
@@ -23,6 +30,14 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState<StickyNote[]>([]);
   const [noteInput, setNoteInput] = useState("");
+
+  // 通知用のステート
+  const [isNoticeOpen, setIsNoticeOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(2); // 初期値として未読2件
+  const notices: Notice[] = [
+    { id: 1, title: "システムアップデート", content: "タブ切り替え機能を追加しました！", date: "2026-02-13" },
+    { id: 2, title: "不具合修正", content: "カレンダーの表示崩れを修正しました。", date: "2026-02-12" },
+  ];
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -41,6 +56,10 @@ export default function Home() {
     setSelectedDate(format(newDate, "yyyy-MM-dd"));
   };
 
+  const markAllAsRead = () => {
+    setUnreadCount(0);
+  };
+
   const addNote = () => {
     if (!noteInput.trim()) return;
     const colors = ["bg-yellow-200", "bg-pink-200", "bg-blue-200", "bg-green-200"];
@@ -54,12 +73,55 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] text-slate-900 pb-20 font-sans">
+    <div className="min-h-screen bg-[#F8F9FA] text-slate-900 pb-20 font-sans relative">
+      
+      {/* 右上の通知ボタン */}
+      <div className="fixed top-6 right-6 z-50 flex items-center gap-3">
+        <div className="relative">
+          <button 
+            onClick={() => setIsNoticeOpen(!isNoticeOpen)}
+            className="bg-white p-3 rounded-2xl shadow-lg border border-gray-100 hover:bg-gray-50 transition active:scale-90"
+          >
+            <span className="text-xl">🔔</span>
+          </button>
+          {unreadCount > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-black w-6 h-6 flex items-center justify-center rounded-full border-2 border-white animate-bounce">
+              {unreadCount}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* 通知ドロップダウンモーダル */}
+      {isNoticeOpen && (
+        <div className="fixed top-20 right-6 z-50 w-80 bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-in slide-in-from-top-4 duration-200">
+          <div className="p-4 bg-gray-50 border-b flex justify-between items-center">
+            <h3 className="font-black text-sm text-gray-500 tracking-widest uppercase">Notices</h3>
+            {unreadCount > 0 && (
+              <button onClick={markAllAsRead} className="text-[10px] bg-black text-white px-2 py-1 rounded-lg font-bold hover:bg-gray-800 transition">
+                すべて既読
+              </button>
+            )}
+          </div>
+          <div className="max-h-96 overflow-y-auto">
+            {notices.map((notice) => (
+              <div key={notice.id} className="p-4 border-b border-gray-50 hover:bg-blue-50 transition cursor-default">
+                <p className="text-[10px] text-gray-400 font-bold mb-1">{notice.date}</p>
+                <h4 className="font-bold text-sm mb-1">{notice.title}</h4>
+                <p className="text-xs text-gray-600 leading-relaxed">{notice.content}</p>
+              </div>
+            ))}
+          </div>
+          <button onClick={() => setIsNoticeOpen(false)} className="w-full py-3 text-xs font-bold text-gray-400 hover:text-black transition">閉じる</button>
+        </div>
+      )}
+
       <Header 
         onGoToToday={() => setSelectedDate(format(new Date(), "yyyy-MM-dd"))}
         onOpenAdmin={() => setActiveTab("admin")}
       />
 
+      {/* タブ切り替えボタン */}
       <div className="max-w-md mx-auto pt-24 px-4">
         <div className="flex bg-white p-1 rounded-2xl shadow-md border border-gray-100">
           <button onClick={() => setActiveTab("home")} className={`flex-1 py-3 rounded-xl font-bold transition ${activeTab === "home" ? "bg-black text-white shadow-lg" : "text-gray-400"}`}>🏠 ホーム</button>
@@ -73,14 +135,10 @@ export default function Home() {
         {/* --- 1. ホームタブ --- */}
         {activeTab === "home" && (
           <div className="bg-white p-10 rounded-[3rem] shadow-2xl border-[6px] border-black text-center animate-in fade-in zoom-in duration-300">
-            {/* タイトル：明朝体に変更 */}
             <h1 className="text-3xl font-serif font-bold text-gray-500 tracking-[0.3em] uppercase mb-4 italic">re!RACK</h1>
             <p className="text-lg font-bold">今日は {format(new Date(), "yyyy年 M月d日(E)", { locale: ja })}</p>
-            
             <div className="mt-8 p-10 bg-red-50 rounded-[2.5rem] border-4 border-red-100">
-              {/* テキスト：明朝体に変更 */}
               <p className="text-red-500 font-serif font-bold text-2xl mb-2 italic">卒業まで あと</p>
-              {/* 数字：明朝体に変更 */}
               <p className="text-[10rem] leading-none font-serif font-black text-red-600 italic">
                 {daysToGraduation}<span className="text-4xl not-italic ml-2 text-red-400">日</span>
               </p>
@@ -94,7 +152,7 @@ export default function Home() {
             <div className="bg-white p-4 rounded-2xl shadow-md flex items-center justify-between border-2 border-black">
               <button onClick={() => changeDate(-1)} className="p-2 hover:bg-gray-100 rounded-full text-2xl">⬅️</button>
               <div className="text-center">
-                <p className="text-xs font-black text-gray-400 uppercase">Selected Date</p>
+                <p className="text-xs font-black text-gray-400 uppercase tracking-tighter">Selected Date</p>
                 <p className="text-xl font-black">{format(new Date(selectedDate), "M月d日 (E)", { locale: ja })}</p>
               </div>
               <button onClick={() => changeDate(1)} className="p-2 hover:bg-gray-100 rounded-full text-2xl">➡️</button>
@@ -102,24 +160,24 @@ export default function Home() {
 
             <section className="bg-white rounded-[2.5rem] shadow-lg p-8 border border-gray-100">
               {loading ? (
-                <div className="py-20 text-center animate-pulse text-gray-300 font-black text-2xl tracking-tighter font-sans">LOADING...</div>
+                <div className="py-20 text-center animate-pulse text-gray-300 font-black text-2xl tracking-tighter">LOADING...</div>
               ) : post ? (
-                <div className="grid gap-4 font-sans">
-                  <div className="p-6 rounded-2xl bg-blue-50 border-l-8 border-blue-500">
+                <div className="grid gap-4">
+                  <div className="p-6 rounded-2xl bg-blue-50 border-l-8 border-blue-500 transition-transform hover:scale-[1.01]">
                     <span className="text-xs font-black text-blue-500 uppercase mb-1 block">📝 宿題</span>
                     <p className="text-2xl font-bold">{post.homework || "なし"}</p>
                   </div>
-                  <div className="p-6 rounded-2xl bg-green-50 border-l-8 border-green-500">
+                  <div className="p-6 rounded-2xl bg-green-50 border-l-8 border-green-500 transition-transform hover:scale-[1.01]">
                     <span className="text-xs font-black text-green-500 uppercase mb-1 block">🎒 持ち物</span>
                     <p className="text-2xl font-bold">{post.items || "なし"}</p>
                   </div>
-                  <div className="p-6 rounded-2xl bg-orange-50 border-l-8 border-orange-500">
+                  <div className="p-6 rounded-2xl bg-orange-50 border-l-8 border-orange-500 transition-transform hover:scale-[1.01]">
                     <span className="text-xs font-black text-orange-500 uppercase mb-1 block">📢 お知らせ</span>
                     <p className="text-2xl font-bold">{post.notice || "なし"}</p>
                   </div>
                 </div>
               ) : (
-                <div className="py-20 text-center border-4 border-dashed border-gray-100 rounded-[2rem] text-gray-300 font-bold font-sans">
+                <div className="py-20 text-center border-4 border-dashed border-gray-100 rounded-[2rem] text-gray-300 font-bold">
                   予定が登録されていません
                 </div>
               )}
@@ -131,7 +189,7 @@ export default function Home() {
         {activeTab === "admin" && (
           <div className="animate-in slide-in-from-bottom duration-300">
             <div className="bg-white rounded-[2.5rem] shadow-xl p-8 border-4 border-dashed border-gray-200">
-              <h2 className="text-xl font-black mb-6 text-center text-gray-400 font-sans">DATE SELECT & EDIT</h2>
+              <h2 className="text-xl font-black mb-6 text-center text-gray-400 uppercase tracking-widest">Date select & Edit</h2>
               <div className="flex justify-center bg-gray-50 p-6 rounded-3xl border border-gray-100 mb-8 overflow-x-auto">
                 <Calendar 
                   onDateClick={(date: any) => {
@@ -145,23 +203,23 @@ export default function Home() {
           </div>
         )}
 
-        {/* 付箋ボード（共通） */}
+        {/* 付箋ボード */}
         <section className="mt-12 bg-slate-200 rounded-[2.5rem] p-8 min-h-[300px] shadow-inner border border-slate-300">
-          <h2 className="text-sm font-black text-slate-500 mb-4 tracking-[0.3em] uppercase text-center font-sans">Sticky Notes Memo</h2>
+          <h2 className="text-sm font-black text-slate-500 mb-4 tracking-[0.3em] uppercase text-center">Sticky Notes Board</h2>
           <div className="flex gap-2 mb-8 max-w-md mx-auto bg-white p-2 rounded-2xl shadow-md">
             <input 
               type="text" 
               value={noteInput}
               onChange={(e) => setNoteInput(e.target.value)}
-              placeholder="メモを入力..."
-              className="flex-1 px-4 py-2 border-none font-bold outline-none font-sans"
+              placeholder="メモを貼る..."
+              className="flex-1 px-4 py-2 border-none font-bold outline-none"
             />
-            <button onClick={addNote} className="bg-black text-white px-6 py-2 rounded-xl font-black active:scale-95 transition font-sans">貼る</button>
+            <button onClick={addNote} className="bg-black text-white px-6 py-2 rounded-xl font-black shadow-lg active:scale-95 transition">貼る</button>
           </div>
           <div className="flex flex-wrap gap-4 justify-center">
             {notes.map((note) => (
               <div key={note.id} onClick={() => setNotes(notes.filter(n => n.id !== note.id))} className={`${note.color} w-32 h-32 p-3 shadow-xl transform rotate-2 hover:rotate-0 transition-all cursor-pointer flex items-center justify-center text-center font-bold border-b-4 border-black/10 active:scale-90`}>
-                <p className="text-sm text-gray-800 break-all leading-tight font-sans">{note.text}</p>
+                <p className="text-sm text-gray-800 break-all leading-tight">{note.text}</p>
               </div>
             ))}
           </div>
