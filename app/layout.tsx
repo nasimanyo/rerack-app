@@ -1,5 +1,5 @@
-// app/layout.tsx
 import type { Metadata } from "next";
+import "./globals.css";   // ← これを追加！！
 
 export const metadata: Metadata = {
   title: "re!RACK",
@@ -13,7 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body>{children}</body>
+      <body className="bg-gray-50">{children}</body>
     </html>
   );
 }
