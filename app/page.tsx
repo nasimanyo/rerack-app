@@ -15,30 +15,51 @@ interface StickyNote {
 }
 
 interface Notice {
-  id: number;
+  id: string;
   title: string;
   content: string;
-  date: string;
+  created_at: string;
 }
 
 type TabType = "home" | "homework" | "admin";
 
 export default function Home() {
+  // 基本ステート
   const [activeTab, setActiveTab] = useState<TabType>("home");
   const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  
+  // 管理者認証ステート
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+
+  // 付箋ステート
   const [notes, setNotes] = useState<StickyNote[]>([]);
   const [noteInput, setNoteInput] = useState("");
 
-  // 通知用のステート
+  // 運営からのお知らせステート
   const [isNoticeOpen, setIsNoticeOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(2); // 初期値として未読2件
-  const notices: Notice[] = [
-    { id: 1, title: "システムアップデート", content: "タブ切り替え機能を追加しました！", date: "2026-02-13" },
-    { id: 2, title: "不具合修正", content: "カレンダーの表示崩れを修正しました。", date: "2026-02-12" },
-  ];
+  const [notices, setNotices] = useState<Notice[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
+  // 初回読み込み：お知らせ取得
+  useEffect(() => {
+    const fetchNotices = async () => {
+      const { data } = await supabase
+        .from("notices")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (data) {
+        setNotices(data);
+        // 仮の未読ロジック：データがあれば通知バッジを表示（実運用ではlocalStorage等で管理可能）
+        setUnreadCount(data.length > 0 ? 1 : 0);
+      }
+    };
+    fetchNotices();
+  }, []);
+
+  // 日付変更時：宿題データ取得
   useEffect(() => {
     const fetchPost = async () => {
       setLoading(true);
@@ -49,17 +70,26 @@ export default function Home() {
     fetchPost();
   }, [selectedDate]);
 
+  // 卒業カウントダウン計算
   const daysToGraduation = differenceInDays(new Date("2026-03-24"), new Date());
 
+  // ハンドラー：日付変更矢印
   const changeDate = (amount: number) => {
     const newDate = amount > 0 ? addDays(new Date(selectedDate), 1) : subDays(new Date(selectedDate), 1);
     setSelectedDate(format(newDate, "yyyy-MM-dd"));
   };
 
-  const markAllAsRead = () => {
-    setUnreadCount(0);
+  // ハンドラー：管理者ログイン
+  const handleAdminLogin = () => {
+    if (passwordInput === "1234") {
+      setIsAdminAuthenticated(true);
+    } else {
+      alert("パスワードが違います");
+      setPasswordInput("");
+    }
   };
 
+  // ハンドラー：付箋追加
   const addNote = () => {
     if (!noteInput.trim()) return;
     const colors = ["bg-yellow-200", "bg-pink-200", "bg-blue-200", "bg-green-200"];
@@ -75,7 +105,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-slate-900 pb-20 font-sans relative">
       
-      {/* 右上の通知ボタン */}
+      {/* 右上：運営からのお知らせボタン */}
       <div className="fixed top-6 right-6 z-50 flex items-center gap-3">
         <div className="relative">
           <button 
@@ -92,25 +122,25 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 通知ドロップダウンモーダル */}
+      {/* お知らせドロップダウン */}
       {isNoticeOpen && (
         <div className="fixed top-20 right-6 z-50 w-80 bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-in slide-in-from-top-4 duration-200">
           <div className="p-4 bg-gray-50 border-b flex justify-between items-center">
             <h3 className="font-black text-sm text-gray-500 tracking-widest uppercase">Notices</h3>
-            {unreadCount > 0 && (
-              <button onClick={markAllAsRead} className="text-[10px] bg-black text-white px-2 py-1 rounded-lg font-bold hover:bg-gray-800 transition">
-                すべて既読
-              </button>
-            )}
+            <button onClick={() => setUnreadCount(0)} className="text-[10px] bg-black text-white px-2 py-1 rounded-lg font-bold transition">
+              既読にする
+            </button>
           </div>
           <div className="max-h-96 overflow-y-auto">
-            {notices.map((notice) => (
+            {notices.length > 0 ? notices.map((notice) => (
               <div key={notice.id} className="p-4 border-b border-gray-50 hover:bg-blue-50 transition cursor-default">
-                <p className="text-[10px] text-gray-400 font-bold mb-1">{notice.date}</p>
+                <p className="text-[10px] text-gray-400 font-bold mb-1">{format(new Date(notice.created_at), "yyyy/MM/dd")}</p>
                 <h4 className="font-bold text-sm mb-1">{notice.title}</h4>
-                <p className="text-xs text-gray-600 leading-relaxed">{notice.content}</p>
+                <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">{notice.content}</p>
               </div>
-            ))}
+            )) : (
+              <p className="p-8 text-center text-xs text-gray-400">お知らせはありません</p>
+            )}
           </div>
           <button onClick={() => setIsNoticeOpen(false)} className="w-full py-3 text-xs font-bold text-gray-400 hover:text-black transition">閉じる</button>
         </div>
@@ -121,7 +151,7 @@ export default function Home() {
         onOpenAdmin={() => setActiveTab("admin")}
       />
 
-      {/* タブ切り替えボタン */}
+      {/* タブ切り替え */}
       <div className="max-w-md mx-auto pt-24 px-4">
         <div className="flex bg-white p-1 rounded-2xl shadow-md border border-gray-100">
           <button onClick={() => setActiveTab("home")} className={`flex-1 py-3 rounded-xl font-bold transition ${activeTab === "home" ? "bg-black text-white shadow-lg" : "text-gray-400"}`}>🏠 ホーム</button>
@@ -165,15 +195,15 @@ export default function Home() {
                 <div className="grid gap-4">
                   <div className="p-6 rounded-2xl bg-blue-50 border-l-8 border-blue-500 transition-transform hover:scale-[1.01]">
                     <span className="text-xs font-black text-blue-500 uppercase mb-1 block">📝 宿題</span>
-                    <p className="text-2xl font-bold">{post.homework || "なし"}</p>
+                    <p className="text-2xl font-bold whitespace-pre-wrap">{post.homework || "なし"}</p>
                   </div>
                   <div className="p-6 rounded-2xl bg-green-50 border-l-8 border-green-500 transition-transform hover:scale-[1.01]">
                     <span className="text-xs font-black text-green-500 uppercase mb-1 block">🎒 持ち物</span>
-                    <p className="text-2xl font-bold">{post.items || "なし"}</p>
+                    <p className="text-2xl font-bold whitespace-pre-wrap">{post.items || "なし"}</p>
                   </div>
                   <div className="p-6 rounded-2xl bg-orange-50 border-l-8 border-orange-500 transition-transform hover:scale-[1.01]">
                     <span className="text-xs font-black text-orange-500 uppercase mb-1 block">📢 お知らせ</span>
-                    <p className="text-2xl font-bold">{post.notice || "なし"}</p>
+                    <p className="text-2xl font-bold whitespace-pre-wrap">{post.notice || "なし"}</p>
                   </div>
                 </div>
               ) : (
@@ -185,27 +215,45 @@ export default function Home() {
           </div>
         )}
 
-        {/* --- 3. 管理タブ --- */}
+        {/* --- 3. 管理タブ (パスワード認証付き) --- */}
         {activeTab === "admin" && (
           <div className="animate-in slide-in-from-bottom duration-300">
-            <div className="bg-white rounded-[2.5rem] shadow-xl p-8 border-4 border-dashed border-gray-200">
-              <h2 className="text-xl font-black mb-6 text-center text-gray-400 uppercase tracking-widest">Date select & Edit</h2>
-              <div className="flex justify-center bg-gray-50 p-6 rounded-3xl border border-gray-100 mb-8 overflow-x-auto">
-                <Calendar 
-                  onDateClick={(date: any) => {
-                    const d = typeof date.format === 'function' ? date.format("YYYY-MM-DD") : format(date, "yyyy-MM-dd");
-                    setSelectedDate(d);
-                  }}
+            {!isAdminAuthenticated ? (
+              <div className="bg-white rounded-[2.5rem] shadow-xl p-10 border-4 border-black text-center max-w-md mx-auto">
+                <span className="text-4xl mb-4 block">🔒</span>
+                <h2 className="text-xl font-black mb-6">管理者認証</h2>
+                <input
+                  type="password"
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  placeholder="パスワードを入力"
+                  className="w-full p-4 rounded-2xl border-2 border-gray-100 mb-4 text-center font-bold focus:border-black outline-none transition"
                 />
+                <button onClick={handleAdminLogin} className="w-full py-4 bg-black text-white rounded-2xl font-black shadow-lg hover:bg-gray-800 active:scale-95 transition">
+                  認証する
+                </button>
               </div>
-              <AdminMenu date={selectedDate} onClose={() => setActiveTab("homework")} />
-            </div>
+            ) : (
+              <div className="bg-white rounded-[2.5rem] shadow-xl p-8 border-4 border-dashed border-gray-200 relative">
+                <button onClick={() => setIsAdminAuthenticated(false)} className="absolute top-4 right-6 text-xs font-bold text-gray-400 hover:text-red-500 transition">ログアウト</button>
+                <h2 className="text-xl font-black mb-6 text-center text-gray-400 uppercase tracking-widest">Date select & Edit</h2>
+                <div className="flex justify-center bg-gray-50 p-6 rounded-3xl border border-gray-100 mb-8 overflow-x-auto">
+                  <Calendar 
+                    onDateClick={(date: any) => {
+                      const d = typeof date.format === 'function' ? date.format("YYYY-MM-DD") : format(date, "yyyy-MM-dd");
+                      setSelectedDate(d);
+                    }}
+                  />
+                </div>
+                <AdminMenu date={selectedDate} onClose={() => setActiveTab("homework")} />
+              </div>
+            )}
           </div>
         )}
 
         {/* 付箋ボード */}
         <section className="mt-12 bg-slate-200 rounded-[2.5rem] p-8 min-h-[300px] shadow-inner border border-slate-300">
-          <h2 className="text-sm font-black text-slate-500 mb-4 tracking-[0.3em] uppercase text-center">Sticky Notes Board</h2>
+          <h2 className="text-sm font-black text-slate-500 mb-4 tracking-[0.3em] uppercase text-center">Sticky Notes Memo</h2>
           <div className="flex gap-2 mb-8 max-w-md mx-auto bg-white p-2 rounded-2xl shadow-md">
             <input 
               type="text" 
