@@ -1,82 +1,135 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 
 export default function SecretPage() {
   const router = useRouter();
-  const [systemStatus, setSystemStatus] = useState("正常稼働中");
-  const [fakeUsers] = useState(128);
-  const [fakePosts] = useState(342);
+
+  const [loading, setLoading] = useState(true);
+  const [postsCount, setPostsCount] = useState(0);
+  const [noticesCount, setNoticesCount] = useState(0);
+  const [todayPost, setTodayPost] = useState<boolean>(false);
+  const [systemMode, setSystemMode] = useState("NORMAL");
+
+  const today = new Date().toISOString().split("T")[0];
+
+  const fetchStats = async () => {
+    setLoading(true);
+
+    const { count: posts } = await supabase
+      .from("posts")
+      .select("*", { count: "exact", head: true });
+
+    const { count: notices } = await supabase
+      .from("notices")
+      .select("*", { count: "exact", head: true });
+
+    const { data: todayData } = await supabase
+      .from("posts")
+      .select("*")
+      .eq("date", today)
+      .maybeSingle();
+
+    setPostsCount(posts || 0);
+    setNoticesCount(notices || 0);
+    setTodayPost(!!todayData);
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6 relative overflow-hidden">
-      
-      {/* 背景グラデーション演出 */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-black to-red-900 opacity-40 blur-3xl"></div>
+    <div className="min-h-screen bg-[#0f0f0f] text-white px-6 py-16">
+      <div className="max-w-5xl mx-auto">
 
-      <div className="relative z-10 max-w-3xl w-full text-center space-y-10">
-        
-        <h1 className="text-4xl font-black tracking-widest uppercase">
-          🕶 ADMIN CONTROL PANEL
+        <h1 className="text-4xl font-black mb-12 tracking-widest text-center">
+          🕶 re!RACK ADMIN DASHBOARD
         </h1>
 
-        <p className="text-gray-400">
-          re!RACKの管理者専用ダッシュボードへようこそ。ここではユーザー管理、投稿管理、システム状態の監視など、様々な管理機能を提供しています。下のボタンから各種操作を行ってください。
-        </p>
-
-        {/* ダッシュボード */}
-        <div className="grid md:grid-cols-3 gap-6 mt-10">
-          
-          <div className="bg-gray-900 p-6 rounded-3xl border border-gray-700 shadow-xl">
-            <p className="text-sm text-gray-400">👥 総ユーザー数</p>
-            <p className="text-3xl font-black mt-2">{fakeUsers}</p>
+        {loading ? (
+          <div className="text-center text-gray-400 animate-pulse">
+            データ取得中...
           </div>
+        ) : (
+          <>
+            {/* --- 統計パネル --- */}
+            <div className="grid md:grid-cols-3 gap-6 mb-12">
 
-          <div className="bg-gray-900 p-6 rounded-3xl border border-gray-700 shadow-xl">
-            <p className="text-sm text-gray-400">📝 総投稿数</p>
-            <p className="text-3xl font-black mt-2">{fakePosts}</p>
-          </div>
+              <StatCard title="総投稿数" value={postsCount} />
+              <StatCard title="お知らせ数" value={noticesCount} />
+              <StatCard
+                title="本日の投稿"
+                value={todayPost ? "あり" : "なし"}
+              />
 
-          <div className="bg-gray-900 p-6 rounded-3xl border border-gray-700 shadow-xl">
-            <p className="text-sm text-gray-400">⚙️ システム状態</p>
-            <p className="text-2xl font-bold mt-2 text-green-400">
-              {systemStatus}
-            </p>
-          </div>
+            </div>
 
-        </div>
+            {/* --- システム制御 --- */}
+            <div className="bg-gray-900 p-8 rounded-3xl border border-gray-700 mb-12">
+              <h2 className="text-xl font-bold mb-6">⚙ システムモード</h2>
 
-        {/* 管理ボタン */}
-        <div className="flex flex-wrap gap-4 justify-center mt-10">
-          
-          <button
-            onClick={() => setSystemStatus("メンテナンス中")}
-            className="px-6 py-3 bg-red-600 rounded-2xl font-bold hover:bg-red-700 transition active:scale-95"
-          >
-            🚨 システム停止
-          </button>
+              <div className="flex gap-4 flex-wrap">
+                <button
+                  onClick={() => setSystemMode("NORMAL")}
+                  className="px-6 py-3 bg-green-600 rounded-2xl font-bold"
+                >
+                  NORMAL
+                </button>
 
-          <button
-            onClick={() => setSystemStatus("正常稼働中")}
-            className="px-6 py-3 bg-green-600 rounded-2xl font-bold hover:bg-green-700 transition active:scale-95"
-          >
-            ✅ システム復旧
-          </button>
+                <button
+                  onClick={() => setSystemMode("MAINTENANCE")}
+                  className="px-6 py-3 bg-yellow-600 rounded-2xl font-bold"
+                >
+                  MAINTENANCE
+                </button>
 
-          <button
-            onClick={() => router.push("/")}
-            className="px-6 py-3 bg-gray-700 rounded-2xl font-bold hover:bg-gray-600 transition active:scale-95"
-          >
-            ⬅ ホームへ戻る
-          </button>
+                <button
+                  onClick={() => setSystemMode("EMERGENCY")}
+                  className="px-6 py-3 bg-red-600 rounded-2xl font-bold"
+                >
+                  EMERGENCY
+                </button>
+              </div>
 
-        </div>
+              <p className="mt-6 text-lg">
+                現在のモード：
+                <span className="font-black ml-2">{systemMode}</span>
+              </p>
+            </div>
 
-        <div className="mt-12 text-xs text-gray-600 tracking-widest">
-          CLASSIFIED LEVEL: 最高機密
-        </div>
+            {/* --- 操作ボタン --- */}
+            <div className="flex gap-4 flex-wrap">
+              <button
+                onClick={fetchStats}
+                className="px-6 py-3 bg-blue-600 rounded-2xl font-bold"
+              >
+                🔄 データ再取得
+              </button>
+
+              <button
+                onClick={() => router.push("/")}
+                className="px-6 py-3 bg-gray-700 rounded-2xl font-bold"
+              >
+                ⬅ ホームへ戻る
+              </button>
+            </div>
+          </>
+        )}
       </div>
+    </div>
+  );
+}
+
+function StatCard({ title, value }: { title: string; value: any }) {
+  return (
+    <div className="bg-gray-900 p-6 rounded-3xl border border-gray-700 shadow-xl text-center">
+      <p className="text-gray-400 text-sm mb-2">{title}</p>
+      <p className="text-3xl font-black">{value}</p>
     </div>
   );
 }
