@@ -37,7 +37,7 @@ export default function AdminMenu({ date, onClose }: AdminMenuProps) {
     } else if (enteredCode === ADMIN_CODE) {
       alert("管理者としてログインしました");
     } else {
-      alert("コードが異なります");
+      alert("コードが違います");
     }
   };
 
