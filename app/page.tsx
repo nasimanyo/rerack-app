@@ -79,14 +79,25 @@ export default function Home() {
   };
 
   const handleAdminLogin = () => {
-    // パスワードを nasimanyo1209 に設定
-    if (passwordInput === "Nasi-man-yo1209") {
-      setIsAdminAuthenticated(true);
-    } else {
-      alert("パスワードが違います");
-      setPasswordInput("");
-    }
-  };
+  const code = passwordInput.trim();
+
+  // 🔐 管理者ログイン
+  if (code === "Nasi-man-yo1209") {
+    setIsAdminAuthenticated(true);
+    return;
+  }
+
+  // 🕶 Secretページへ
+  if (code === "re2026") {
+    window.location.href = "/secret";
+    return;
+  }
+
+  // ❌ それ以外
+  alert("パスワードが違います");
+  setPasswordInput("");
+};
+
 
   const addNote = () => {
     if (!noteInput.trim()) return;
