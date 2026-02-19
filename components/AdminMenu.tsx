@@ -27,7 +27,7 @@ export default function AdminMenu({ date, onClose }: AdminMenuProps) {
   const [adminCode, setAdminCode] = useState("");
 
   const ADMIN_CODE = "admin123";
-  const SECRET_CODE = "reRackSecret";
+  const SECRET_CODE = "re2026";
 
   const handleAdminLogin = () => {
     if (adminCode === SECRET_CODE) {
