@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
 
 interface AdminMenuProps {
@@ -10,6 +11,8 @@ interface AdminMenuProps {
 }
 
 export default function AdminMenu({ date, onClose }: AdminMenuProps) {
+  const router = useRouter();
+
   // その日の予定用
   const [homework, setHomework] = useState("");
   const [items, setItems] = useState("");
@@ -19,6 +22,22 @@ export default function AdminMenu({ date, onClose }: AdminMenuProps) {
   const [adminTitle, setAdminTitle] = useState("");
   const [adminContent, setAdminContent] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
+
+  // 🔐 管理者コード用（追加）
+  const [adminCode, setAdminCode] = useState("");
+
+  const ADMIN_CODE = "admin123";
+  const SECRET_CODE = "reRackSecret";
+
+  const handleAdminLogin = () => {
+    if (adminCode === SECRET_CODE) {
+      router.push("/secret");
+    } else if (adminCode === ADMIN_CODE) {
+      alert("管理者としてログインしました");
+    } else {
+      alert("コードが違います");
+    }
+  };
 
   // その日の予定を保存する関数（既存）
   const saveDailyPost = async () => {
@@ -32,7 +51,7 @@ export default function AdminMenu({ date, onClose }: AdminMenuProps) {
     else alert("その日の予定を更新しました");
   };
 
-  // 運営からのお知らせを投稿する関数（新規）
+  // 運営からのお知らせを投稿する関数（既存）
   const publishNotice = async () => {
     if (!adminTitle || !adminContent) return alert("タイトルと内容を入力してください");
     
@@ -53,39 +72,57 @@ export default function AdminMenu({ date, onClose }: AdminMenuProps) {
 
   return (
     <div className="space-y-8 font-sans">
+      
       {/* その日の予定セクション */}
       <div className="p-6 bg-gray-50 rounded-2xl border-2 border-black">
         <h3 className="font-black mb-4 flex items-center gap-2">
           <span>📅</span> {date} の予定を編集
         </h3>
         <div className="space-y-3">
-          <input className="w-full p-3 rounded-xl border" placeholder="宿題" onChange={(e) => setHomework(e.target.value)} />
-          <input className="w-full p-3 rounded-xl border" placeholder="持ち物" onChange={(e) => setItems(e.target.value)} />
-          <textarea className="w-full p-3 rounded-xl border" placeholder="お知らせ" onChange={(e) => setNotice(e.target.value)} />
-          <button onClick={saveDailyPost} className="w-full py-3 bg-black text-white rounded-xl font-black">更新する</button>
+          <input
+            className="w-full p-3 rounded-xl border"
+            placeholder="宿題"
+            onChange={(e) => setHomework(e.target.value)}
+          />
+          <input
+            className="w-full p-3 rounded-xl border"
+            placeholder="持ち物"
+            onChange={(e) => setItems(e.target.value)}
+          />
+          <textarea
+            className="w-full p-3 rounded-xl border"
+            placeholder="お知らせ"
+            onChange={(e) => setNotice(e.target.value)}
+          />
+          <button
+            onClick={saveDailyPost}
+            className="w-full py-3 bg-black text-white rounded-xl font-black"
+          >
+            更新する
+          </button>
         </div>
       </div>
 
-      {/* 運営からのお知らせセクション（新規追加） */}
+      {/* 運営からのお知らせセクション */}
       <div className="p-6 bg-blue-50 rounded-2xl border-2 border-blue-200">
         <h3 className="font-black text-blue-700 mb-4 flex items-center gap-2">
           <span>📢</span> 運営からのお知らせを投稿
         </h3>
         <div className="space-y-3">
-          <input 
-            className="w-full p-3 rounded-xl border-2 border-blue-100 focus:border-blue-400 outline-none" 
-            placeholder="お知らせのタイトル" 
+          <input
+            className="w-full p-3 rounded-xl border-2 border-blue-100 focus:border-blue-400 outline-none"
+            placeholder="お知らせのタイトル"
             value={adminTitle}
             onChange={(e) => setAdminTitle(e.target.value)}
           />
-          <textarea 
-            className="w-full p-3 rounded-xl border-2 border-blue-100 focus:border-blue-400 outline-none min-h-[100px]" 
-            placeholder="お知らせの詳細内容..." 
+          <textarea
+            className="w-full p-3 rounded-xl border-2 border-blue-100 focus:border-blue-400 outline-none min-h-[100px]"
+            placeholder="お知らせの詳細内容..."
             value={adminContent}
             onChange={(e) => setAdminContent(e.target.value)}
           />
-          <button 
-            onClick={publishNotice} 
+          <button
+            onClick={publishNotice}
             disabled={isPublishing}
             className="w-full py-3 bg-blue-600 text-white rounded-xl font-black shadow-lg hover:bg-blue-700 active:scale-95 transition disabled:bg-gray-400"
           >
@@ -94,7 +131,34 @@ export default function AdminMenu({ date, onClose }: AdminMenuProps) {
         </div>
       </div>
 
-      <button onClick={onClose} className="w-full py-3 text-gray-400 font-bold">閉じる</button>
+      {/* 🔐 管理者認証セクション（同じテキストボックスで分岐） */}
+      <div className="p-6 bg-red-50 rounded-2xl border-2 border-red-200">
+        <h3 className="font-black text-red-600 mb-4 flex items-center gap-2">
+          <span>🔐</span> 管理者認証
+        </h3>
+        <div className="space-y-3">
+          <input
+            type="password"
+            className="w-full p-3 rounded-xl border-2 border-red-100 focus:border-red-400 outline-none"
+            placeholder="コードを入力"
+            value={adminCode}
+            onChange={(e) => setAdminCode(e.target.value)}
+          />
+          <button
+            onClick={handleAdminLogin}
+            className="w-full py-3 bg-red-600 text-white rounded-xl font-black hover:bg-red-700 transition"
+          >
+            認証する
+          </button>
+        </div>
+      </div>
+
+      <button
+        onClick={onClose}
+        className="w-full py-3 text-gray-400 font-bold"
+      >
+        閉じる
+      </button>
     </div>
   );
 }
