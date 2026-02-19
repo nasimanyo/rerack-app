@@ -1,4 +1,3 @@
-// components/AdminMenu.tsx
 "use client";
 
 import { useState } from "react";
@@ -23,23 +22,26 @@ export default function AdminMenu({ date, onClose }: AdminMenuProps) {
   const [adminContent, setAdminContent] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
 
-  // 🔐 管理者コード用（追加）
+  // 🔐 管理者コード用
   const [adminCode, setAdminCode] = useState("");
 
   const ADMIN_CODE = "admin123";
   const SECRET_CODE = "re2026";
 
   const handleAdminLogin = () => {
-    if (adminCode === SECRET_CODE) {
+    // 【修正】trim() を使って前後に入った不要なスペースを削除してから判定
+    const enteredCode = adminCode.trim();
+
+    if (enteredCode === SECRET_CODE) {
       router.push("/secret");
-    } else if (adminCode === ADMIN_CODE) {
+    } else if (enteredCode === ADMIN_CODE) {
       alert("管理者としてログインしました");
     } else {
       alert("コードが違います");
     }
   };
 
-  // その日の予定を保存する関数（既存）
+  // その日の予定を保存する関数
   const saveDailyPost = async () => {
     const { error } = await supabase.from("posts").upsert({
       date,
@@ -51,7 +53,7 @@ export default function AdminMenu({ date, onClose }: AdminMenuProps) {
     else alert("その日の予定を更新しました");
   };
 
-  // 運営からのお知らせを投稿する関数（既存）
+  // 運営からのお知らせを投稿する関数
   const publishNotice = async () => {
     if (!adminTitle || !adminContent) return alert("タイトルと内容を入力してください");
     
@@ -131,7 +133,7 @@ export default function AdminMenu({ date, onClose }: AdminMenuProps) {
         </div>
       </div>
 
-      {/* 🔐 管理者認証セクション（同じテキストボックスで分岐） */}
+      {/* 🔐 管理者認証セクション */}
       <div className="p-6 bg-red-50 rounded-2xl border-2 border-red-200">
         <h3 className="font-black text-red-600 mb-4 flex items-center gap-2">
           <span>🔐</span> 管理者認証
@@ -143,6 +145,10 @@ export default function AdminMenu({ date, onClose }: AdminMenuProps) {
             placeholder="コードを入力"
             value={adminCode}
             onChange={(e) => setAdminCode(e.target.value)}
+            // 【追加】Enterキーを押した際にもログイン処理を実行
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleAdminLogin();
+            }}
           />
           <button
             onClick={handleAdminLogin}
