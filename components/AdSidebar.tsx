@@ -1,30 +1,44 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 
 export default function AdSidebar() {
-  const AD_WIDTH = 300;
-  const AD_HEIGHT = 600; // ← 縦長に変更
+  const [adUrl, setAdUrl] = useState<string | null>(null);
 
-  const adImage = "/ads/vertical-ad.png"; // public/ads に配置
+  useEffect(() => {
+    const fetchAd = async () => {
+      const { data } = supabase.storage
+        .from("ads")
+        .getPublicUrl("latest.png");
+
+      if (data?.publicUrl) {
+        setAdUrl(data.publicUrl);
+      }
+    };
+
+    fetchAd();
+  }, []);
 
   return (
     <div className="flex flex-col items-center">
-      <div className="text-sm font-bold text-gray-500 mb-3">
-        広告（非収益掲載）
-      </div>
-
-      <div
-        className="border rounded-xl overflow-hidden bg-white shadow"
-        style={{ width: AD_WIDTH, height: AD_HEIGHT }}
-      >
+      {adUrl ? (
         <Image
-          src={adImage}
+          src={adUrl}
           alt="広告"
-          width={AD_WIDTH}
-          height={AD_HEIGHT}
-          className="object-cover"
+          width={300}
+          height={600}
+          className="rounded-xl shadow"
         />
+      ) : (
+        <div className="w-[300px] h-[600px] bg-gray-200 rounded-xl flex items-center justify-center">
+          広告なし
+        </div>
+      )}
+
+      <div className="text-xs text-gray-400 text-center mt-3">
+        ※非営利掲載枠です。企業広告は募集していません。
       </div>
     </div>
   );
