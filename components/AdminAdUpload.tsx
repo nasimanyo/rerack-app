@@ -32,9 +32,10 @@ export default function AdminAdUpload() {
         .upload("latest.png", file, { upsert: true });
 
       if (error) {
-        alert("アップロード失敗");
-      } else {
-        alert("広告を更新しました！");
+        console.log(error);
+        alert(error.message);
+    } else {
+        alert("広告の更新に完了しました");
       }
 
       setUploading(false);
