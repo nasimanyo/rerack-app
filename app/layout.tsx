@@ -16,16 +16,16 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body>
-        <div className="flex min-h-screen">
-          {/* メインコンテンツ */}
-          <main className="flex-1 p-6">
+        {/* メイン（常に中央） */}
+        <main className="min-h-screen flex justify-center p-6">
+          <div className="w-full max-w-3xl">
             {children}
-          </main>
+          </div>
+        </main>
 
-          {/* 右広告バー（PCのみ表示） */}
-          <aside className="w-[320px] hidden lg:flex border-l bg-gray-50 p-4 justify-center">
-            <AdSidebar />
-          </aside>
+        {/* 右側固定広告 */}
+        <div className="hidden lg:block fixed right-6 top-1/2 -translate-y-1/2">
+          <AdSidebar />
         </div>
       </body>
     </html>
