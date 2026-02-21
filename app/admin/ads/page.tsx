@@ -1,34 +1,54 @@
 "use client";
 
 import { useState } from "react";
-import AdminAdUpload from "@/components/AdminAdUpload";
+import { supabase } from "@/lib/supabase";
 
-export default function AdminAdsPage() {
-  const [code, setCode] = useState("");
-  const SECRET = "Nasi-man-yo1209";
+export default function UploadPage() {
+  const [uploading, setUploading] = useState(false);
 
-  if (code !== SECRET) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <input
-          type="password"
-          placeholder="管理コード"
-          className="border p-2 rounded"
-          onChange={(e) => setCode(e.target.value)}
-        />
-      </div>
-    );
-  }
+  const handleUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    try {
+      setUploading(true);
+
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      // サイズ制限（例: 300x600専用想定）
+      if (!file.type.startsWith("image/")) {
+        alert("画像のみアップロード可能です");
+        return;
+      }
+
+      const fileName = `${Date.now()}-${file.name}`;
+
+      const { error } = await supabase.storage
+        .from("ads")
+        .upload(fileName, file);
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      alert("アップロード成功！");
+    } catch (error) {
+      alert("アップロード失敗");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen flex justify-center p-10">
-      <div className="w-full max-w-xl space-y-6">
-        <h1 className="text-2xl font-bold text-center">
-          広告管理ページ
-        </h1>
-
-        <AdminAdUpload />
-      </div>
+    <div style={{ padding: 40 }}>
+      <h1>広告アップロード</h1>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleUpload}
+        disabled={uploading}
+      />
     </div>
   );
 }
