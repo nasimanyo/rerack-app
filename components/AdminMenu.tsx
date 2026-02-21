@@ -1,6 +1,5 @@
 "use client";
 
-import AdminAdUpload from "@/components/AdminAdUpload";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
@@ -232,6 +231,19 @@ export default function AdminMenu({ date, onClose }: AdminMenuProps) {
           </button>
         </div>
       </div>
+
+          {/* 管理ページへのショートカット */}
+          <div className="p-4 bg-white rounded-xl border">
+            <h4 className="font-bold mb-2">運営ツール</h4>
+            <div className="space-y-2">
+              <button
+                onClick={() => router.push('/admin/ads')}
+                className="w-full py-2 bg-yellow-500 text-black rounded-xl font-bold hover:brightness-90"
+              >
+                広告アップロードページへ
+              </button>
+            </div>
+          </div>
 
       <button
         onClick={onClose}
