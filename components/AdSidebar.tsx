@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import Image from "next/image";
+// Use a plain <img> instead of next/image so external Supabase public URLs
+// work without adding domains to next.config.
 
 export default function AdSidebar() {
   const [adUrl, setAdUrl] = useState<string | null>(null);
@@ -20,7 +21,7 @@ export default function AdSidebar() {
   return (
     <div className="flex flex-col items-center">
       {adUrl ? (
-        <Image
+        <img
           src={adUrl}
           alt="広告"
           width={300}
