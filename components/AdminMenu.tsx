@@ -1,5 +1,6 @@
 "use client";
 
+import AdminAdUpload from "@/components/AdminAdUpload";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
