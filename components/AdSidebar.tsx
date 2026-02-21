@@ -8,17 +8,13 @@ export default function AdSidebar() {
   const [adUrl, setAdUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchAd = async () => {
-      const { data } = supabase.storage
-        .from("ads")
-        .getPublicUrl("latest.png");
+    const { data } = supabase.storage
+      .from("ads")
+      .getPublicUrl("latest.png");
 
-      if (data?.publicUrl) {
-        setAdUrl(data.publicUrl);
-      }
-    };
-
-    fetchAd();
+    if (data?.publicUrl) {
+      setAdUrl(data.publicUrl + "?t=" + Date.now()); // キャッシュ防止
+    }
   }, []);
 
   return (

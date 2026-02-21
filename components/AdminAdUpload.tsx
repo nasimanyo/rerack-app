@@ -7,7 +7,6 @@ export default function AdminAdUpload() {
   const REQUIRED_WIDTH = 300;
   const REQUIRED_HEIGHT = 600;
 
-  const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
   const handleUpload = async (file: File) => {
@@ -28,16 +27,14 @@ export default function AdminAdUpload() {
 
       setUploading(true);
 
-      const fileName = `ad-${Date.now()}.png`;
-
       const { error } = await supabase.storage
         .from("ads")
-        .upload(fileName, file, { upsert: true });
+        .upload("latest.png", file, { upsert: true });
 
       if (error) {
         alert("アップロード失敗");
       } else {
-        alert("アップロード成功！");
+        alert("広告を更新しました！");
       }
 
       setUploading(false);
@@ -47,7 +44,7 @@ export default function AdminAdUpload() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="p-4 border rounded-xl space-y-4">
       <div className="font-bold">
         広告アップロード（300×600固定）
       </div>
