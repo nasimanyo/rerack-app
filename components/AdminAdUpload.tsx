@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-export default function AdminAdUpload() {
+export default function AdminAdUpload({ fileName = "latest.png", title = "広告アップロード（300×600）" }: { fileName?: string; title?: string }) {
   const REQUIRED_WIDTH = 300;
   const REQUIRED_HEIGHT = 600;
 
@@ -18,11 +18,11 @@ export default function AdminAdUpload() {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    const { data } = supabase.storage.from("ads").getPublicUrl("latest.png");
+    const { data } = supabase.storage.from("ads").getPublicUrl(fileName);
     if (data?.publicUrl) {
       setCurrentAdUrl(data.publicUrl + "?t=" + Date.now());
     }
-  }, []);
+  }, [fileName]);
 
   useEffect(() => {
     return () => {
@@ -84,7 +84,7 @@ export default function AdminAdUpload() {
     setUploading(true);
     setError(null);
 
-    const { error } = await supabase.storage.from("ads").upload("latest.png", file, { upsert: true });
+    const { error } = await supabase.storage.from("ads").upload(fileName, file, { upsert: true });
 
     setUploading(false);
     if (error) {
@@ -95,14 +95,14 @@ export default function AdminAdUpload() {
 
     setSuccess(true);
     // Refresh current ad URL with cache-bust
-    const { data } = supabase.storage.from("ads").getPublicUrl("latest.png");
+    const { data } = supabase.storage.from("ads").getPublicUrl(fileName);
     if (data?.publicUrl) setCurrentAdUrl(data.publicUrl + "?t=" + Date.now());
   };
 
   return (
     <div className="p-4 border rounded-xl space-y-4">
       <div className="flex items-center justify-between">
-        <div className="font-bold">広告アップロード（300×600）</div>
+          <div className="font-bold">{title}</div>
         {currentAdUrl && (
           <div className="text-xs text-gray-500">現在の広告</div>
         )}

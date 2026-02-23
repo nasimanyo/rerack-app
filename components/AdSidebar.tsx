@@ -5,18 +5,16 @@ import { supabase } from "@/lib/supabase";
 // Use a plain <img> instead of next/image so external Supabase public URLs
 // work without adding domains to next.config.
 
-export default function AdSidebar() {
+export default function AdSidebar({ fileName = "latest.png" }: { fileName?: string }) {
   const [adUrl, setAdUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const { data } = supabase.storage
-      .from("ads")
-      .getPublicUrl("latest.png");
+    const { data } = supabase.storage.from("ads").getPublicUrl(fileName);
 
     if (data?.publicUrl) {
       setAdUrl(data.publicUrl + "?t=" + Date.now()); // キャッシュ防止
     }
-  }, []);
+  }, [fileName]);
 
   return (
     <div className="flex flex-col items-center">
