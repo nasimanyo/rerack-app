@@ -1,7 +1,7 @@
 // app/layout.tsx
 import "./globals.css";
 import type { Metadata } from "next";
-import AdSidebar from "@/components/AdSidebar";
+import AdFixedSides from "@/components/AdFixedSides";
 
 export const metadata: Metadata = {
   title: "re!RACK | 卒業カウントダウン",
@@ -23,10 +23,7 @@ export default function RootLayout({
           </div>
         </main>
 
-        {/* 右側固定広告 */}
-        <div className="hidden lg:block fixed right-6 top-1/2 -translate-y-1/2">
-          <AdSidebar />
-        </div>
+        <AdFixedSides />
       </body>
     </html>
   );
