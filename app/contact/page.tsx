@@ -9,27 +9,25 @@ export default function ContactPage() {
 
       <p className="mb-4">以下のフォームからお問い合わせください。</p>
 
-      <div style={{ width: "100%", minHeight: 600 }}>
-        <iframe
-          src="https://forms.gle/QxENVhxVKftcMffdA"
-          title="re!RACK お問い合わせフォーム"
-          style={{ width: "100%", height: "800px", border: 0 }}
-          loading="lazy"
-        />
-      </div>
+      <div style={{ width: "100%", minHeight: 300 }} className="flex flex-col items-start justify-center gap-4">
+        <p>
+          このフォームはre!RACKのお問い合わせ用のフォームです。
+          こちらからお問い合わせや機能の要望、バグの報告、広告掲載の申請などが行えます。
+        </p>
 
-      <p className="mt-4 text-sm">
-        フォームが表示されない場合は
+        <p className="text-sm text-gray-600">
+          ※埋め込み表示がブラウザで拒否される場合があるため、下のボタンで新しいタブで開きます。
+        </p>
+
         <a
           href="https://forms.gle/QxENVhxVKftcMffdA"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 underline ml-1"
+          className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          こちら
+          フォームを開く
         </a>
-        を開いてください。
-      </p>
+      </div>
     </main>
   );
 }
