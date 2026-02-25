@@ -11,7 +11,7 @@ export default function ContactPage() {
 
       <div style={{ width: "100%", minHeight: 600 }}>
         <iframe
-          src="https://form.run/@nasiman-rerack"
+          src="https://form.run/embed/@nasiman-rerack?embed=direct"
           title="re!RACK お問い合わせフォーム"
           style={{ width: "100%", height: "800px", border: 0 }}
           loading="lazy"
