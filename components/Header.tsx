@@ -1,6 +1,7 @@
 "use client";
 
-import { Home, Edit3 } from 'lucide-react';
+import { Home, Edit3, Mail } from 'lucide-react';
+import Link from 'next/link';
 
 interface HeaderProps {
   onGoToToday: () => void;
@@ -36,6 +37,14 @@ export const Header = ({ onGoToToday, onOpenAdmin }: HeaderProps) => {
             <Edit3 size={20} />
             <span className="text-[10px] font-bold mt-0.5">編集</span>
           </button>
+
+          <Link
+            href="/contact"
+            className="flex flex-col items-center justify-center text-gray-500 hover:text-blue-600 transition-colors"
+          >
+            <Mail size={20} />
+            <span className="text-[10px] font-bold mt-0.5">お問い合わせ</span>
+          </Link>
         </div>
       </div>
     </nav>
