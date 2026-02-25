@@ -9,7 +9,7 @@ type Props = {
   redirectPath?: string;
 };
 
-export default function SecretGate({ children, password = "Haruki_1209", redirectPath }: Props) {
+export default function SecretGate({ children, password = "nasimanch", redirectPath }: Props) {
   const [input, setInput] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const router = useRouter();
