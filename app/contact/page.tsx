@@ -11,7 +11,7 @@ export default function ContactPage() {
 
       <div style={{ width: "100%", minHeight: 600 }}>
         <iframe
-          src="https://form.run/embed/@nasiman-rerack?embed=direct"
+          src="https://forms.gle/QxENVhxVKftcMffdA"
           title="re!RACK お問い合わせフォーム"
           style={{ width: "100%", height: "800px", border: 0 }}
           loading="lazy"
@@ -21,7 +21,7 @@ export default function ContactPage() {
       <p className="mt-4 text-sm">
         フォームが表示されない場合は
         <a
-          href="https://form.run/@nasiman-rerack"
+          href="https://forms.gle/QxENVhxVKftcMffdA"
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-600 underline ml-1"
