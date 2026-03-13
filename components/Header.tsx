@@ -5,47 +5,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 interface HeaderProps {
-  onGoToToday: () => void;
-  onOpenAdmin: () => void;
+  onGoToToday?: () => void;
+  onOpenAdmin?: () => void;
+  onOpenHomework?: () => void;
 }
 
-export const Header = ({ onGoToToday, onOpenAdmin }: HeaderProps) => {
+export const Header = ({ onGoToToday, onOpenAdmin, onOpenHomework }: HeaderProps) => {
   const pathname = usePathname();
-
-  const navItems = [
-    {
-      label: 'ホーム',
-      icon: Home,
-      href: '/',
-      onClick: onGoToToday,
-      activeColor: 'text-blue-600',
-      hoverColor: 'hover:text-blue-600',
-    },
-    {
-      label: '宿題',
-      icon: BookOpen,
-      href: '/?tab=homework',
-      onClick: undefined,
-      activeColor: 'text-green-600',
-      hoverColor: 'hover:text-green-600',
-    },
-    {
-      label: 'チャット',
-      icon: MessageSquare,
-      href: '/room',
-      onClick: undefined,
-      activeColor: 'text-purple-600',
-      hoverColor: 'hover:text-purple-600',
-    },
-    {
-      label: '管理',
-      icon: Settings,
-      href: '/?tab=admin',
-      onClick: onOpenAdmin,
-      activeColor: 'text-orange-500',
-      hoverColor: 'hover:text-orange-500',
-    },
-  ];
+  const isRoomPage = pathname === '/room';
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md border-b border-gray-200 z-40 shadow-sm">
@@ -61,31 +28,65 @@ export const Header = ({ onGoToToday, onOpenAdmin }: HeaderProps) => {
 
         {/* ナビ */}
         <div className="flex items-center gap-1">
-          {navItems.map(({ label, icon: Icon, href, onClick, activeColor, hoverColor }) => {
-            const isActive = pathname === '/room'
-              ? href === '/room'
-              : href.startsWith('/?tab=')
-                ? false  // タブはURLに出ないのでactiveなし
-                : pathname === href;
 
-            const base = `flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all text-gray-400 ${hoverColor}`;
-            const active = isActive ? `${activeColor} bg-gray-50` : '';
+          {/* ホーム */}
+          <Link
+            href="/"
+            onClick={onGoToToday}
+            className={`flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all
+              ${!isRoomPage ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:text-blue-600'}`}
+          >
+            <Home size={18} strokeWidth={!isRoomPage ? 2.5 : 2} />
+            <span className="text-[10px] font-bold mt-0.5">ホーム</span>
+          </Link>
 
-            if (onClick) {
-              return (
-                <button key={label} onClick={onClick} className={`${base} ${active}`}>
-                  <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
-                  <span className="text-[10px] font-bold mt-0.5">{label}</span>
-                </button>
-              );
-            }
-            return (
-              <Link key={label} href={href} className={`${base} ${active}`}>
-                <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
-                <span className="text-[10px] font-bold mt-0.5">{label}</span>
-              </Link>
-            );
-          })}
+          {/* 宿題 */}
+          {!isRoomPage ? (
+            <button
+              onClick={onOpenHomework}
+              className="flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all text-gray-400 hover:text-green-600"
+            >
+              <BookOpen size={18} strokeWidth={2} />
+              <span className="text-[10px] font-bold mt-0.5">宿題</span>
+            </button>
+          ) : (
+            <Link
+              href="/"
+              className="flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all text-gray-400 hover:text-green-600"
+            >
+              <BookOpen size={18} strokeWidth={2} />
+              <span className="text-[10px] font-bold mt-0.5">宿題</span>
+            </Link>
+          )}
+
+          {/* チャット */}
+          <Link
+            href="/room"
+            className={`flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all
+              ${isRoomPage ? 'text-purple-600 bg-purple-50' : 'text-gray-400 hover:text-purple-600'}`}
+          >
+            <MessageSquare size={18} strokeWidth={isRoomPage ? 2.5 : 2} />
+            <span className="text-[10px] font-bold mt-0.5">チャット</span>
+          </Link>
+
+          {/* 管理 */}
+          {!isRoomPage ? (
+            <button
+              onClick={onOpenAdmin}
+              className="flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all text-gray-400 hover:text-orange-500"
+            >
+              <Settings size={18} strokeWidth={2} />
+              <span className="text-[10px] font-bold mt-0.5">管理</span>
+            </button>
+          ) : (
+            <Link
+              href="/?tab=admin"
+              className="flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all text-gray-400 hover:text-orange-500"
+            >
+              <Settings size={18} strokeWidth={2} />
+              <span className="text-[10px] font-bold mt-0.5">管理</span>
+            </Link>
+          )}
 
           {/* お問い合わせ */}
           <Link
@@ -95,8 +96,8 @@ export const Header = ({ onGoToToday, onOpenAdmin }: HeaderProps) => {
             <Mail size={18} strokeWidth={2} />
             <span className="text-[10px] font-bold mt-0.5">連絡</span>
           </Link>
-        </div>
 
+        </div>
       </div>
     </nav>
   );

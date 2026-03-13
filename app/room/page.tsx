@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { Header } from "../../components/Header";
 
 // ─── Types ───────────────────────────────────────────────
 interface Room {
@@ -278,28 +279,13 @@ export default function RoomPage() {
         }
 
         /* ── Top header (matches re!RACK) ── */
-        .rr-header {
-          position: sticky; top: 0; z-index: 40;
+        .rr-header-sub {
           background: #fff;
           border-bottom: 1px solid #e5e7eb;
           padding: 0 16px;
-          height: 56px;
+          height: 44px;
           display: flex; align-items: center; justify-content: space-between;
-          box-shadow: 0 1px 4px rgba(0,0,0,.06);
         }
-        .rr-logo {
-          font-size: 1.15rem; font-weight: 700; color: #1a1a2e;
-          display: flex; align-items: center; gap: 6px;
-        }
-        .rr-logo span { color: #2563eb; }
-        .rr-header-right { display: flex; align-items: center; gap: 10px; }
-        .rr-user-badge {
-          font-size: .78rem; color: #6b7280;
-          background: #f3f4f6; border-radius: 20px;
-          padding: 4px 10px;
-          display: flex; align-items: center; gap: 5px;
-        }
-        .rr-dot { width: 7px; height: 7px; background: #22c55e; border-radius: 50%; }
         .rr-btn-sm {
           font-size: .78rem; font-family: inherit;
           padding: 5px 12px; border-radius: 8px;
@@ -310,7 +296,7 @@ export default function RoomPage() {
         .rr-btn-sm:hover { background: #f9fafb; }
 
         /* ── Main layout ── */
-        .rr-main { flex: 1; display: flex; flex-direction: column; }
+        .rr-main { flex: 1; display: flex; flex-direction: column; padding-top: 56px; }
 
         /* ── Page title band ── */
         .rr-page-band {
@@ -458,7 +444,7 @@ export default function RoomPage() {
         .rr-action-btn.del:hover { background: #fee2e2; }
 
         /* ══ CHAT ══ */
-        .rr-chat-layout { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+        .rr-chat-layout { flex:1; display:flex; flex-direction:column; overflow:hidden; padding-top: 100px; }
         .rr-chat-topbar {
           display:flex; align-items:center; justify-content:space-between;
           padding: 10px 16px;
@@ -582,21 +568,21 @@ export default function RoomPage() {
         .rr-toast.show { opacity:1; }
       `}</style>
 
-      {/* ═══ HEADER ═══ */}
+      {/* ═══ 共通ヘッダー ═══ */}
+      <Header />
+
+      {/* ユーザー情報サブバー（ロビー・チャット時） */}
       {view !== "login" && (
-        <header className="rr-header">
-          <div className="rr-logo">re!<span>RACK</span></div>
-          <div className="rr-header-right">
+        <div className="rr-header-sub" style={{ marginTop: 56, position: "sticky", top: 56, zIndex: 30 }}>
+          <div style={{ fontSize: ".78rem", color: "#6b7280", display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ width: 7, height: 7, background: "#22c55e", borderRadius: "50%", display: "inline-block" }} />
+            {username}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
             {view === "lobby" && (
-              <>
-                <div className="rr-user-badge">
-                  <div className="rr-dot" />
-                  {username}
-                </div>
-                <button className="rr-btn-sm" onClick={() => { setSavedUser(""); setView("login"); }}>
-                  ログアウト
-                </button>
-              </>
+              <button className="rr-btn-sm" onClick={() => { setSavedUser(""); setView("login"); }}>
+                ログアウト
+              </button>
             )}
             {view === "chat" && (
               <button className="rr-btn-sm" style={{ color:"#ef4444", borderColor:"#fca5a5" }} onClick={leaveRoom}>
@@ -604,15 +590,12 @@ export default function RoomPage() {
               </button>
             )}
           </div>
-        </header>
+        </div>
       )}
 
       {/* ═══ LOGIN ═══ */}
       {view === "login" && (
         <div className="rr-main">
-          <header className="rr-header">
-            <div className="rr-logo">re!<span>RACK</span></div>
-          </header>
           <div className="rr-center">
             <div className="rr-card">
               <div className="rr-card-title">💬 re!Room に入室</div>
@@ -716,7 +699,7 @@ export default function RoomPage() {
 
           <div className="rr-messages">
             {roomMsgs.length === 0 && (
-              <div className="rr-sys-msg">メッセージはまだありません。最初に話しかけよう！</div>
+              <div className="rr-sys-msg">ここはチャットルームであるメッセージはまだない。吾輩は猫である名前はまだない</div>
             )}
             {roomMsgs.map((msg, i) => {
               const isOwn = msg.author === username;
@@ -758,10 +741,10 @@ export default function RoomPage() {
       <div className={`rr-overlay ${showCreate ? "open" : ""}`}
         onClick={e => { if (e.target === e.currentTarget) setShowCreate(false); }}>
         <div className="rr-modal">
-          <div className="rr-modal-title">✏️ 新しいルームを作成</div>
+          <div className="rr-modal-title">✏️ 新しいルームを作成する</div>
           <div className="rr-field">
             <label className="rr-label">ルーム名</label>
-            <input className="rr-input" placeholder="例: 雑談部屋"
+            <input className="rr-input" placeholder="例: なしまんを語る会"
               value={newRoomName} onChange={e => setNewRoomName(e.target.value)} />
           </div>
           <div className="rr-field">

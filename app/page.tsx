@@ -49,7 +49,7 @@ export default function Home() {
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
-  // 管理者認証だお
+  // 管理者認証
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
 
@@ -204,8 +204,9 @@ export default function Home() {
       )}
 
       <Header 
-        onGoToToday={() => setSelectedDate(format(new Date(), "yyyy-MM-dd"))}
+        onGoToToday={() => { setSelectedDate(format(new Date(), "yyyy-MM-dd")); setActiveTab("home"); }}
         onOpenAdmin={() => setActiveTab("admin")}
+        onOpenHomework={() => setActiveTab("homework")}
       />
 
       {/* 📱 タブナビゲーション */}
