@@ -473,23 +473,7 @@ export default function RoomPage() {
         .rr-send:hover { background:#1d4ed8; }
         .rr-send:active { transform:scale(.92); }
 
-        /* ── Bottom nav (matches re!RACK) ── */
-        .rr-bottom-nav {
-          position:fixed; bottom:0; left:0; right:0;
-          background:#fff; border-top:1px solid #e5e7eb;
-          display:flex; justify-content:space-around;
-          padding:6px 0 calc(6px + env(safe-area-inset-bottom));
-          z-index:50;
-        }
-        .rr-nav-item {
-          display:flex; flex-direction:column; align-items:center;
-          gap:2px; padding:6px 12px; border-radius:10px;
-          font-size:.65rem; color:#9ca3af; font-weight:500;
-          text-decoration:none; transition:color .15s, background .15s;
-          cursor:pointer; border:none; background:none; font-family:inherit;
-        }
-        .rr-nav-item .nav-icon { font-size:1.2rem; }
-        .rr-nav-item.active { color:#2563eb; }
+
 
         /* ── Modal overlay ── */
         .rr-overlay {
@@ -693,23 +677,7 @@ export default function RoomPage() {
         </div>
       )}
 
-      {/* ═══ BOTTOM NAV (matches re!RACK) ═══ */}
-      {view !== "login" && (
-        <nav className="rr-bottom-nav">
-          <a href="/" className="rr-nav-item">
-            <span className="nav-icon">🏠</span>ホーム
-          </a>
-          <a href="/homework" className="rr-nav-item">
-            <span className="nav-icon">📝</span>宿題
-          </a>
-          <button className="rr-nav-item active">
-            <span className="nav-icon">💬</span>チャット
-          </button>
-          <a href="/admin" className="rr-nav-item">
-            <span className="nav-icon">⚙️</span>管理
-          </a>
-        </nav>
-      )}
+
 
       {/* ═══ CREATE MODAL ═══ */}
       <div className={`rr-overlay ${showCreate ? "open" : ""}`}
