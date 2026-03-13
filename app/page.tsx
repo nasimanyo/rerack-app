@@ -49,7 +49,7 @@ export default function Home() {
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
-  // 管理者認証
+  // 管理者認証だお
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
 
