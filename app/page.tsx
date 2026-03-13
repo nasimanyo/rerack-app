@@ -21,6 +21,25 @@ interface Notice {
   created_at: string;
 }
 
+// re!Room types (localStorage)
+interface Room {
+  id: string;
+  name: string;
+  pw: string | null;
+  createdAt: number;
+  createdBy: string;
+}
+const ROOMS_KEY = "reroom_rooms";
+const MSGS_KEY  = "reroom_msgs";
+function getRooms(): Room[] {
+  try { return JSON.parse(localStorage.getItem(ROOMS_KEY) || "[]"); } catch { return []; }
+}
+function setRoomsStorage(r: Room[]) { localStorage.setItem(ROOMS_KEY, JSON.stringify(r)); }
+function getMsgsStorage(): unknown[] {
+  try { return JSON.parse(localStorage.getItem(MSGS_KEY) || "[]"); } catch { return []; }
+}
+function setMsgsStorage(m: unknown[]) { localStorage.setItem(MSGS_KEY, JSON.stringify(m)); }
+
 type TabType = "home" | "homework" | "admin";
 
 export default function Home() {
@@ -42,6 +61,11 @@ export default function Home() {
   const [isNoticeOpen, setIsNoticeOpen] = useState(false);
   const [notices, setNotices] = useState<Notice[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // re!Room 管理
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [deleteTargetRoom, setDeleteTargetRoom] = useState<Room | null>(null);
+  const [showRoomDeleteConfirm, setShowRoomDeleteConfirm] = useState(false);
 
   // --- データ取得：お知らせ ---
   useEffect(() => {
@@ -69,6 +93,13 @@ export default function Home() {
     fetchPost();
   }, [selectedDate]);
 
+  // 管理タブを開いたときにルーム一覧を同期
+  useEffect(() => {
+    if (activeTab === "admin" && isAdminAuthenticated) {
+      setRooms(getRooms());
+    }
+  }, [activeTab, isAdminAuthenticated]);
+
   // 卒業カウントダウン計算
   const daysToGraduation = differenceInDays(new Date("2026-03-24"), new Date());
 
@@ -79,25 +110,42 @@ export default function Home() {
   };
 
   const handleAdminLogin = () => {
-  const code = passwordInput.trim();
+    const code = passwordInput.trim();
 
-  // 🔐 管理者ログイン
-  if (code === "Nasi-man-yo1209") {
-    setIsAdminAuthenticated(true);
-    return;
-  }
+    // 🔐 管理者ログイン
+    if (code === "Nasi-man-yo1209") {
+      setIsAdminAuthenticated(true);
+      setRooms(getRooms());
+      return;
+    }
 
-  // 🕶 Secretページへ
-  if (code === "re2026") {
-    window.location.href = "/secret";
-    return;
-  }
+    // 🕶 Secretページへ
+    if (code === "re2026") {
+      window.location.href = "/secret";
+      return;
+    }
 
-  // ❌ それ以外
-  alert("パスワードが違います");
-  setPasswordInput("");
-};
+    // ❌ それ以外
+    alert("パスワードが違います");
+    setPasswordInput("");
+  };
 
+  // re!Room: ルーム削除
+  const openRoomDelete = (room: Room) => {
+    setDeleteTargetRoom(room);
+    setShowRoomDeleteConfirm(true);
+  };
+
+  const confirmRoomDelete = () => {
+    if (!deleteTargetRoom) return;
+    const updatedRooms = getRooms().filter(r => r.id !== deleteTargetRoom.id);
+    const updatedMsgs  = getMsgsStorage().filter((m: any) => m.roomId !== deleteTargetRoom.id);
+    setRoomsStorage(updatedRooms);
+    setMsgsStorage(updatedMsgs);
+    setRooms(updatedRooms);
+    setShowRoomDeleteConfirm(false);
+    setDeleteTargetRoom(null);
+  };
 
   const addNote = () => {
     if (!noteInput.trim()) return;
@@ -235,6 +283,7 @@ export default function Home() {
                   type="password"
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAdminLogin()}
                   placeholder="パスワードを入力"
                   className="w-full p-4 rounded-2xl border-2 border-gray-100 mb-4 text-center font-bold focus:border-black outline-none"
                 />
@@ -243,23 +292,85 @@ export default function Home() {
                 </button>
               </div>
             ) : (
-              <div className="bg-white rounded-[2.5rem] shadow-xl p-8 border-4 border-dashed border-gray-200 relative font-sans">
-                <button onClick={() => setIsAdminAuthenticated(false)} className="absolute top-4 right-6 text-xs font-bold text-gray-400 hover:text-red-500 transition">ログアウト</button>
-                <h2 className="text-xl font-black mb-6 text-center text-gray-400 uppercase tracking-widest">Date select & Edit</h2>
-                
-                {/* カレンダー表示崩れ対策 */}
-                <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100 mb-8 max-w-md mx-auto shadow-inner flex justify-center">
-                  <div className="w-full min-w-[320px]">
-                    <Calendar 
-                      onDateClick={(date: any) => {
-                        const d = typeof date.format === 'function' ? date.format("YYYY-MM-DD") : format(date, "yyyy-MM-dd");
-                        setSelectedDate(d);
-                      }}
-                    />
+              <div className="space-y-6">
+
+                {/* 既存の宿題編集エリア */}
+                <div className="bg-white rounded-[2.5rem] shadow-xl p-8 border-4 border-dashed border-gray-200 relative font-sans">
+                  <button onClick={() => setIsAdminAuthenticated(false)} className="absolute top-4 right-6 text-xs font-bold text-gray-400 hover:text-red-500 transition">ログアウト</button>
+                  <h2 className="text-xl font-black mb-6 text-center text-gray-400 uppercase tracking-widest">Date select & Edit</h2>
+                  
+                  <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100 mb-8 max-w-md mx-auto shadow-inner flex justify-center">
+                    <div className="w-full min-w-[320px]">
+                      <Calendar 
+                        onDateClick={(date: any) => {
+                          const d = typeof date.format === 'function' ? date.format("YYYY-MM-DD") : format(date, "yyyy-MM-dd");
+                          setSelectedDate(d);
+                        }}
+                      />
+                    </div>
                   </div>
+
+                  <AdminMenu date={selectedDate} onClose={() => setActiveTab("homework")} />
                 </div>
 
-                <AdminMenu date={selectedDate} onClose={() => setActiveTab("homework")} />
+                {/* ══ re!Room ルーム管理 ══ */}
+                <div className="bg-white rounded-[2.5rem] shadow-xl p-8 border-4 border-dashed border-red-100 font-sans">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-xl font-black text-gray-800">💬 re!Room 管理</h2>
+                      <p className="text-xs text-gray-400 font-bold mt-1">ルームの削除ができます</p>
+                    </div>
+                    <button
+                      onClick={() => setRooms(getRooms())}
+                      className="text-xs font-bold text-gray-400 hover:text-black border border-gray-200 px-3 py-2 rounded-xl transition hover:bg-gray-50"
+                    >
+                      🔄 更新
+                    </button>
+                  </div>
+
+                  {rooms.length === 0 ? (
+                    <div className="py-16 text-center border-4 border-dashed border-gray-100 rounded-[2rem] text-gray-300 font-bold">
+                      ルームがありません
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {rooms.map(room => {
+                        const msgCount = getMsgsStorage().filter((m: any) => m.roomId === room.id).length;
+                        return (
+                          <div key={room.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-gray-200 transition">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-black text-sm text-gray-800 truncate">
+                                  # {room.name}
+                                </span>
+                                {room.pw && (
+                                  <span className="text-[10px] font-bold bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full border border-yellow-200">
+                                    🔒 鍵あり
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-3 mt-1">
+                                <span className="text-[11px] text-gray-400 font-bold">
+                                  作成者: {room.createdBy}
+                                </span>
+                                <span className="text-[11px] text-gray-400">
+                                  {msgCount}件のメッセージ
+                                </span>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => openRoomDelete(room)}
+                              className="ml-4 flex-shrink-0 px-4 py-2 bg-red-50 text-red-500 font-black text-xs rounded-xl border border-red-200 hover:bg-red-100 active:scale-95 transition"
+                            >
+                              🗑 削除
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
               </div>
             )}
           </div>
@@ -288,6 +399,40 @@ export default function Home() {
         </section>
 
       </main>
+
+      {/* ══ ルーム削除確認モーダル ══ */}
+      {showRoomDeleteConfirm && deleteTargetRoom && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowRoomDeleteConfirm(false); }}
+        >
+          <div className="bg-white rounded-[2rem] shadow-2xl p-8 w-full max-w-sm border-4 border-red-100 animate-in zoom-in duration-200">
+            <span className="text-4xl block text-center mb-4">🗑</span>
+            <h3 className="text-lg font-black text-center mb-2">ルームを削除</h3>
+            <p className="text-sm text-gray-600 text-center mb-1">
+              「<strong>{deleteTargetRoom.name}</strong>」を削除しますか？
+            </p>
+            <p className="text-xs text-red-500 font-bold text-center mb-6">
+              ※ ルーム内のメッセージもすべて削除されます
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowRoomDeleteConfirm(false)}
+                className="flex-1 py-3 rounded-2xl border-2 border-gray-200 font-black text-gray-500 hover:bg-gray-50 transition"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={confirmRoomDelete}
+                className="flex-1 py-3 rounded-2xl bg-red-500 text-white font-black shadow-lg hover:bg-red-600 active:scale-95 transition"
+              >
+                削除する
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

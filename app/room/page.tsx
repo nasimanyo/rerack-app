@@ -689,7 +689,6 @@ export default function RoomPage() {
                     {room.createdBy === username && (
                       <div className="rr-room-card-actions">
                         <button className="rr-action-btn" onClick={e => openEdit(e, room)}>✏️ 編集</button>
-                        <button className="rr-action-btn del" onClick={e => openDelete(e, room)}>🗑 削除</button>
                       </div>
                     )}
                   </div>
@@ -818,24 +817,6 @@ export default function RoomPage() {
           <div className="rr-modal-btns">
             <button className="rr-btn outline" onClick={() => setShowEdit(false)}>キャンセル</button>
             <button className="rr-btn" onClick={saveEdit}>保存する</button>
-          </div>
-        </div>
-      </div>
-
-      {/* ═══ DELETE CONFIRM MODAL ═══ */}
-      <div className={`rr-overlay ${showDelete ? "open" : ""}`}
-        onClick={e => { if (e.target === e.currentTarget) setShowDelete(false); }}>
-        <div className="rr-modal">
-          <div className="rr-modal-title">🗑 ルームを削除</div>
-          <p style={{ fontSize:".85rem", color:"#6b7280", marginBottom:8 }}>
-            「<strong>{deleteRoom?.name}</strong>」を削除しますか？
-          </p>
-          <p style={{ fontSize:".78rem", color:"#ef4444" }}>
-            ※ ルーム内のメッセージもすべて削除されます
-          </p>
-          <div className="rr-modal-btns">
-            <button className="rr-btn outline" onClick={() => setShowDelete(false)}>キャンセル</button>
-            <button className="rr-btn danger" onClick={confirmDelete}>削除する</button>
           </div>
         </div>
       </div>
