@@ -8,6 +8,7 @@ interface Room {
   name: string;
   pw: string | null;
   createdAt: number;
+  createdBy: string;
 }
 
 interface Message {
@@ -51,8 +52,8 @@ function uid() { return Math.random().toString(36).slice(2,10); }
 function seedRooms() {
   if (getRooms().length === 0) {
     setRooms([
-      { id: "general", name: "general",      pw: null,     createdAt: Date.now() },
-      { id: "secret",  name: "secret-lounge", pw: "room123", createdAt: Date.now() },
+      { id: "general", name: "general",       pw: null,      createdAt: Date.now(), createdBy: "system" },
+      { id: "secret",  name: "secret-lounge", pw: "room123", createdAt: Date.now(), createdBy: "system" },
     ]);
   }
 }
@@ -80,6 +81,16 @@ export default function RoomPage() {
   const [pendingRoom,  setPendingRoom]  = useState<Room | null>(null);
   const [enterPw,      setEnterPw]      = useState("");
   const [pwError,      setPwError]      = useState("");
+
+  // edit modal
+  const [showEdit,     setShowEdit]     = useState(false);
+  const [editRoom,     setEditRoom]     = useState<Room | null>(null);
+  const [editName,     setEditName]     = useState("");
+  const [editPw,       setEditPw]       = useState("");
+
+  // delete confirm modal
+  const [showDelete,   setShowDelete]   = useState(false);
+  const [deleteRoom,   setDeleteRoom]   = useState<Room | null>(null);
 
   // chat
   const [chatInput,    setChatInput]    = useState("");
@@ -148,7 +159,7 @@ export default function RoomPage() {
     if (!name) { showToast("ルーム名を入力してください"); return; }
     const all = getRooms();
     if (all.find(r => r.name === name)) { showToast("同名のルームが既にあります"); return; }
-    const room: Room = { id: uid(), name, pw: newRoomPw || null, createdAt: Date.now() };
+    const room: Room = { id: uid(), name, pw: newRoomPw || null, createdAt: Date.now(), createdBy: username };
     const updated = [...all, room];
     setRooms(updated);
     setRoomsState(updated);
@@ -186,6 +197,51 @@ export default function RoomPage() {
     setCurrentRoom(null);
     setRoomsState(getRooms());
     setView("lobby");
+  }
+
+  // ── Edit room
+  function openEdit(e: React.MouseEvent, room: Room) {
+    e.stopPropagation();
+    setEditRoom(room);
+    setEditName(room.name);
+    setEditPw(room.pw || "");
+    setShowEdit(true);
+  }
+
+  function saveEdit() {
+    if (!editRoom) return;
+    const name = editName.trim();
+    if (!name) { showToast("ルーム名を入力してください"); return; }
+    const all = getRooms();
+    if (all.find(r => r.name === name && r.id !== editRoom.id)) {
+      showToast("同名のルームが既にあります"); return;
+    }
+    const updated = all.map(r =>
+      r.id === editRoom.id ? { ...r, name, pw: editPw || null } : r
+    );
+    setRooms(updated);
+    setRoomsState(updated);
+    setShowEdit(false);
+    showToast("ルームを更新しました");
+  }
+
+  // ── Delete room
+  function openDelete(e: React.MouseEvent, room: Room) {
+    e.stopPropagation();
+    setDeleteRoom(room);
+    setShowDelete(true);
+  }
+
+  function confirmDelete() {
+    if (!deleteRoom) return;
+    const updatedRooms = getRooms().filter(r => r.id !== deleteRoom.id);
+    const updatedMsgs  = getMsgs().filter(m => m.roomId !== deleteRoom.id);
+    setRooms(updatedRooms);
+    setMsgs(updatedMsgs);
+    setRoomsState(updatedRooms);
+    setMsgsState(updatedMsgs);
+    setShowDelete(false);
+    showToast(`「${deleteRoom.name}」を削除しました`);
   }
 
   // ── Send message
@@ -386,6 +442,20 @@ export default function RoomPage() {
           padding: 48px 20px; color: #9ca3af;
         }
         .rr-empty-icon { font-size:2rem; margin-bottom:10px; }
+
+        /* ── Room card owner actions ── */
+        .rr-room-card-actions {
+          display: flex; gap: 6px; margin-top: 10px;
+        }
+        .rr-action-btn {
+          flex: 1; padding: 5px 0; font-size: .72rem; font-family: inherit;
+          border-radius: 7px; border: 1px solid #e5e7eb;
+          background: #f9fafb; color: #6b7280; cursor: pointer;
+          transition: background .15s, color .15s, border-color .15s;
+        }
+        .rr-action-btn:hover { background: #f3f4f6; color: #374151; }
+        .rr-action-btn.del { color: #ef4444; border-color: #fca5a5; background: #fff5f5; }
+        .rr-action-btn.del:hover { background: #fee2e2; }
 
         /* ══ CHAT ══ */
         .rr-chat-layout { flex:1; display:flex; flex-direction:column; overflow:hidden; }
@@ -616,6 +686,12 @@ export default function RoomPage() {
                         {last.author}: {last.text}
                       </div>
                     )}
+                    {room.createdBy === username && (
+                      <div className="rr-room-card-actions">
+                        <button className="rr-action-btn" onClick={e => openEdit(e, room)}>✏️ 編集</button>
+                        <button className="rr-action-btn del" onClick={e => openDelete(e, room)}>🗑 削除</button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -720,6 +796,46 @@ export default function RoomPage() {
           <div className="rr-modal-btns">
             <button className="rr-btn outline" onClick={() => setShowPwModal(false)}>キャンセル</button>
             <button className="rr-btn" onClick={joinLocked}>入室する</button>
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ EDIT MODAL ═══ */}
+      <div className={`rr-overlay ${showEdit ? "open" : ""}`}
+        onClick={e => { if (e.target === e.currentTarget) setShowEdit(false); }}>
+        <div className="rr-modal">
+          <div className="rr-modal-title">✏️ ルームを編集</div>
+          <div className="rr-field">
+            <label className="rr-label">ルーム名</label>
+            <input className="rr-input" value={editName}
+              onChange={e => setEditName(e.target.value)} />
+          </div>
+          <div className="rr-field">
+            <label className="rr-label">パスワード（空欄で公開ルームに変更）</label>
+            <input className="rr-input" type="password" placeholder="任意"
+              value={editPw} onChange={e => setEditPw(e.target.value)} />
+          </div>
+          <div className="rr-modal-btns">
+            <button className="rr-btn outline" onClick={() => setShowEdit(false)}>キャンセル</button>
+            <button className="rr-btn" onClick={saveEdit}>保存する</button>
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ DELETE CONFIRM MODAL ═══ */}
+      <div className={`rr-overlay ${showDelete ? "open" : ""}`}
+        onClick={e => { if (e.target === e.currentTarget) setShowDelete(false); }}>
+        <div className="rr-modal">
+          <div className="rr-modal-title">🗑 ルームを削除</div>
+          <p style={{ fontSize:".85rem", color:"#6b7280", marginBottom:8 }}>
+            「<strong>{deleteRoom?.name}</strong>」を削除しますか？
+          </p>
+          <p style={{ fontSize:".78rem", color:"#ef4444" }}>
+            ※ ルーム内のメッセージもすべて削除されます
+          </p>
+          <div className="rr-modal-btns">
+            <button className="rr-btn outline" onClick={() => setShowDelete(false)}>キャンセル</button>
+            <button className="rr-btn danger" onClick={confirmDelete}>削除する</button>
           </div>
         </div>
       </div>
