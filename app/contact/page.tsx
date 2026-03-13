@@ -2,200 +2,148 @@
 
 import { useState } from "react";
 import { Header } from "../../components/Header";
-import { Send, MessageCircle, Bug, Megaphone, Sparkles, CheckCircle2 } from "lucide-react";
+import { ChevronDown, Mail, MessageCircle, Bug, Sparkles, Shield } from "lucide-react";
 
-type Category = "general" | "feature" | "bug" | "other";
-
-const categories: { id: Category; label: string; icon: React.ReactNode; color: string; bg: string }[] = [
-  { id: "general", label: "一般的なお問い合わせ", icon: <MessageCircle size={16} />, color: "text-blue-600",   bg: "bg-blue-50 border-blue-200"   },
-  { id: "feature", label: "機能リクエスト",       icon: <Sparkles    size={16} />, color: "text-purple-600", bg: "bg-purple-50 border-purple-200" },
-  { id: "bug",     label: "バグ報告",             icon: <Bug         size={16} />, color: "text-red-500",    bg: "bg-red-50 border-red-200"      },
-  { id: "other",   label: "その他",               icon: <Megaphone   size={16} />, color: "text-orange-500", bg: "bg-orange-50 border-orange-200" },
+const faqs = [
+  {
+    icon: <MessageCircle size={15} />,
+    color: "text-blue-500",
+    bg: "bg-blue-50",
+    q: "re!RACKはどんなサービスですか？",
+    a: "クラスの宿題・持ち物・お知らせを共有するための学校向けアプリです。卒業カウントダウンやチャット機能（re!Room）も搭載しています。",
+  },
+  {
+    icon: <MessageCircle size={15} />,
+    color: "text-blue-500",
+    bg: "bg-blue-50",
+    q: "re!Roomのデータはどこに保存されますか？",
+    a: "re!Roomのメッセージ・ルーム情報はお使いのブラウザのlocalStorageに保存されます。他の端末や別ブラウザからは見えません。",
+  },
+  {
+    icon: <Sparkles size={15} />,
+    color: "text-purple-500",
+    bg: "bg-purple-50",
+    q: "新しい機能を追加してほしいのですが？",
+    a: "ご要望は大歓迎です！下記のメールアドレスに「機能リクエスト」とわかるタイトルでご連絡ください。すべての要望に対応できるわけではありませんが、参考にさせていただきます。",
+  },
+  {
+    icon: <Bug size={15} />,
+    color: "text-red-500",
+    bg: "bg-red-50",
+    q: "バグや不具合を見つけました",
+    a: "ご報告ありがとうございます。発生した状況（どの画面で・何をしたときに・どうなったか）をできるだけ詳しく下記メールにお送りください。迅速に対応します。",
+  },
+  {
+    icon: <Shield size={15} />,
+    color: "text-green-500",
+    bg: "bg-green-50",
+    q: "広告について教えてください",
+    a: "本サービスは非営利目的で運営しています。掲載される広告はすべて非商業的なものに限られ、企業・法人・営利団体からの広告掲載依頼は受け付けていません。",
+  },
+  {
+    icon: <Shield size={15} />,
+    color: "text-green-500",
+    bg: "bg-green-50",
+    q: "個人情報はどう扱われますか？",
+    a: "re!RACKはユーザーの個人情報をサーバーに収集・保存しません。宿題データはSupabase（外部DB）に、チャットデータはブラウザのみに保存されます。",
+  },
 ];
 
+interface FaqItemProps {
+  icon: React.ReactNode;
+  color: string;
+  bg: string;
+  q: string;
+  a: string;
+}
+
+function FaqItem({ icon, color, bg, q, a }: FaqItemProps) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div
+      className={`rounded-2xl border-2 transition-all duration-200 overflow-hidden
+        ${open ? "border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" : "border-gray-100 hover:border-gray-200"}`}
+    >
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-3 px-5 py-4 text-left bg-white"
+      >
+        <span className={`flex-shrink-0 w-7 h-7 rounded-xl flex items-center justify-center ${bg} ${color}`}>
+          {icon}
+        </span>
+        <span className="flex-1 font-bold text-sm text-gray-800 leading-snug">{q}</span>
+        <ChevronDown
+          size={16}
+          className={`flex-shrink-0 text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          strokeWidth={2.5}
+        />
+      </button>
+      {open && (
+        <div className="px-5 pb-5 bg-white">
+          <div className="ml-10 pt-1 border-t border-gray-100">
+            <p className="text-sm text-gray-600 font-medium leading-relaxed mt-3">{a}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ContactPage() {
-  const [category, setCategory] = useState<Category>("general");
-  const [name,     setName]     = useState("");
-  const [email,    setEmail]    = useState("");
-  const [message,  setMessage]  = useState("");
-  const [sent,     setSent]     = useState(false);
-  const [error,    setError]    = useState("");
-
-  const TO = "nasimanyo1209@gmail.com";
-
-  function handleSubmit() {
-    if (!name.trim())    { setError("お名前を入力してください"); return; }
-    if (!message.trim()) { setError("メッセージを入力してください"); return; }
-    setError("");
-
-    const cat  = categories.find(c => c.id === category)?.label ?? category;
-    const body = encodeURIComponent(
-      `【カテゴリ】${cat}\n【お名前】${name}\n【返信先】${email || "未入力"}\n\n${message}`
-    );
-    const subject = encodeURIComponent(`[re!RACK お問い合わせ] ${cat}`);
-
-    window.location.href = `mailto:${TO}?subject=${subject}&body=${body}`;
-    setSent(true);
-  }
-
   return (
     <div className="min-h-screen bg-[#F8F9FA] font-sans">
       <Header />
 
-      <main className="max-w-lg mx-auto px-4 pt-24 pb-20">
+      <main className="max-w-lg mx-auto px-4 pt-24 pb-20 space-y-6">
 
         {/* ── ヘッダーバナー ── */}
-        <div className="relative bg-white rounded-[2rem] border-[3px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] px-8 pt-8 pb-6 mb-6 overflow-hidden">
-          {/* 装飾ドット */}
+        <div className="relative bg-white rounded-[2rem] border-[3px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] px-8 pt-8 pb-7 overflow-hidden">
           <div className="absolute top-4 right-6 flex gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
             <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
             <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
           </div>
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[4px] mb-2">Contact Us</p>
-          <h1 className="text-3xl font-black tracking-tighter text-gray-900 leading-tight">
-            お問い合わせ
-          </h1>
-          <p className="text-sm text-gray-500 font-medium mt-3 leading-relaxed">
-            ご意見・バグ報告・機能リクエストなどをお気軽にどうぞ。<br />
-            メールアプリが開きますので、そのまま送信してください。
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[4px] mb-1">Help & Contact</p>
+          <h1 className="text-3xl font-black tracking-tighter text-gray-900">よくある質問</h1>
+          <p className="text-sm text-gray-500 font-medium mt-2 leading-relaxed">
+            解決しない場合はメールでお気軽にどうぞ。
           </p>
         </div>
 
-        {sent ? (
-          /* ── 送信完了画面 ── */
-          <div className="bg-white rounded-[2rem] border-[3px] border-green-400 shadow-[6px_6px_0px_0px_rgba(74,222,128,0.4)] px-8 py-12 text-center">
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                <CheckCircle2 size={36} className="text-green-500" strokeWidth={2.5} />
-              </div>
-            </div>
-            <h2 className="text-xl font-black text-gray-800 mb-2">メールアプリが開きました</h2>
-            <p className="text-sm text-gray-500 font-medium mb-8">
-              そのまま送信ボタンを押してください。<br />
-              ご連絡ありがとうございます！
-            </p>
-            <button
-              onClick={() => setSent(false)}
-              className="px-8 py-3 bg-black text-white font-black rounded-2xl hover:bg-gray-800 active:scale-95 transition-all shadow-lg"
-            >
-              別の内容を送る
-            </button>
-          </div>
-        ) : (
-          /* ── フォーム ── */
-          <div className="bg-white rounded-[2rem] border-[3px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] px-8 py-8 space-y-6">
-
-            {/* カテゴリ選択 */}
-            <div>
-              <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[2px] mb-3">
-                カテゴリ
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {categories.map(cat => (
-                  <button
-                    key={cat.id}
-                    onClick={() => setCategory(cat.id)}
-                    className={`flex items-center gap-2 px-4 py-3 rounded-2xl border-2 font-bold text-sm transition-all active:scale-95
-                      ${category === cat.id
-                        ? `${cat.bg} ${cat.color} border-current shadow-sm`
-                        : "bg-gray-50 border-gray-100 text-gray-400 hover:border-gray-200"
-                      }`}
-                  >
-                    {cat.icon}
-                    <span className="truncate">{cat.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* お名前 */}
-            <div>
-              <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[2px] mb-2">
-                お名前 <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="山田 太郎"
-                className="w-full px-4 py-3 rounded-2xl border-2 border-gray-100 font-bold text-sm text-gray-800 bg-gray-50 focus:bg-white focus:border-black outline-none transition-all placeholder:text-gray-300"
-              />
-            </div>
-
-            {/* 返信用メール（任意） */}
-            <div>
-              <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[2px] mb-2">
-                返信先メール <span className="text-gray-300 font-medium normal-case tracking-normal text-[10px]">（任意）</span>
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="example@email.com"
-                className="w-full px-4 py-3 rounded-2xl border-2 border-gray-100 font-bold text-sm text-gray-800 bg-gray-50 focus:bg-white focus:border-black outline-none transition-all placeholder:text-gray-300"
-              />
-            </div>
-
-            {/* メッセージ */}
-            <div>
-              <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[2px] mb-2">
-                メッセージ <span className="text-red-400">*</span>
-              </label>
-              <textarea
-                value={message}
-                onChange={e => setMessage(e.target.value)}
-                placeholder="お問い合わせ内容を入力してください..."
-                rows={5}
-                className="w-full px-4 py-3 rounded-2xl border-2 border-gray-100 font-bold text-sm text-gray-800 bg-gray-50 focus:bg-white focus:border-black outline-none transition-all resize-none placeholder:text-gray-300 leading-relaxed"
-              />
-            </div>
-
-            {/* エラー */}
-            {error && (
-              <p className="text-xs font-bold text-red-500 bg-red-50 px-4 py-2.5 rounded-xl border border-red-100">
-                ⚠️ {error}
-              </p>
-            )}
-
-            {/* 送信先表示 */}
-            <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 rounded-2xl border border-gray-100">
-              <Send size={13} className="text-gray-400 flex-shrink-0" />
-              <p className="text-xs text-gray-400 font-bold truncate">
-                送信先: {TO}
-              </p>
-            </div>
-
-            {/* 送信ボタン */}
-            <button
-              onClick={handleSubmit}
-              className="w-full py-4 bg-black text-white font-black rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)] hover:bg-gray-800 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.15)] active:scale-95 transition-all flex items-center justify-center gap-2 text-base"
-            >
-              <Send size={18} strokeWidth={2.5} />
-              メールアプリで開く
-            </button>
-
-            <p className="text-[11px] text-gray-400 text-center font-medium leading-relaxed">
-              ボタンを押すとメールアプリが起動します。<br />
-              内容を確認してから送信してください。
-            </p>
-
-          </div>
-        )}
-
-        {/* 広告ポリシー */}
-        <div className="mt-6 px-6 py-4 bg-white rounded-2xl border border-gray-100 space-y-1.5">
-          <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-2">広告ポリシー</p>
-          {[
-            "本サービスでは画面の一部に画像形式の広告を表示する場合があります。",
-            "本サービスは商業広告媒体ではありません。",
-            "企業・法人・営利団体からの広告掲載依頼は受け付けておりません。",
-          ].map((text, i) => (
-            <p key={i} className="text-[11px] text-gray-400 font-medium leading-relaxed flex gap-2">
-              <span className="text-gray-300 font-black flex-shrink-0">{i + 1}.</span>
-              {text}
-            </p>
+        {/* ── Q&A ── */}
+        <div className="space-y-3">
+          {faqs.map((faq, i) => (
+            <FaqItem key={i} {...faq} />
           ))}
+        </div>
+
+        {/* ── 直接連絡 ── */}
+        <div className="bg-white rounded-[2rem] border-[3px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] px-8 py-7">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-black rounded-2xl flex items-center justify-center">
+              <Mail size={18} className="text-white" strokeWidth={2.5} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[2px]">Direct Contact</p>
+              <h2 className="text-base font-black text-gray-900">直接メールで連絡する</h2>
+            </div>
+          </div>
+
+          <p className="text-sm text-gray-500 font-medium leading-relaxed mb-5">
+            Q&Aで解決しない場合や、バグ報告・機能リクエストは以下のアドレスへどうぞ。
+          </p>
+
+          {/* メールアドレス直書き */}
+          <div className="flex items-center gap-3 bg-gray-50 border-2 border-gray-200 rounded-2xl px-5 py-4">
+            <Mail size={16} className="text-gray-400 flex-shrink-0" />
+            <span className="font-black text-gray-800 text-sm tracking-tight select-all">
+              nasimanyo1209@gmail.com
+            </span>
+          </div>
+
+          <p className="text-[11px] text-gray-400 font-medium mt-3 leading-relaxed">
+            ※ メールアドレスをコピーして、お使いのメールアプリから送信してください。
+          </p>
         </div>
 
       </main>
