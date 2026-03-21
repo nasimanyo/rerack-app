@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, BookOpen, MessageSquare, Settings, Mail } from 'lucide-react';
+import { Home, BookOpen, Wrench, Settings, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -12,7 +12,7 @@ interface HeaderProps {
 
 export const Header = ({ onGoToToday, onOpenAdmin, onOpenHomework }: HeaderProps) => {
   const pathname = usePathname();
-  const isRoomPage = pathname === '/room';
+  const isHome = pathname === '/';
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md border-b border-gray-200 z-40 shadow-sm">
@@ -20,82 +20,56 @@ export const Header = ({ onGoToToday, onOpenAdmin, onOpenHomework }: HeaderProps
 
         {/* ロゴ */}
         <Link href="/" onClick={onGoToToday} className="flex items-center gap-2 flex-shrink-0">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+          <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-sm">
             <span className="text-white font-black text-xs">R</span>
           </div>
           <h1 className="text-base font-extrabold tracking-tighter text-gray-800">re!RACK</h1>
+          <span className="text-[10px] font-black text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded-lg border border-blue-200">
+            中学生
+          </span>
         </Link>
 
         {/* ナビ */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
 
           {/* ホーム */}
           <Link
             href="/"
             onClick={onGoToToday}
-            className={`flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all
-              ${!isRoomPage ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:text-blue-600'}`}
+            className={`flex flex-col items-center justify-center px-2.5 py-1.5 rounded-xl transition-all ${
+              isHome ? 'text-black bg-gray-100' : 'text-gray-400 hover:text-black'
+            }`}
           >
-            <Home size={18} strokeWidth={!isRoomPage ? 2.5 : 2} />
+            <Home size={17} strokeWidth={isHome ? 2.5 : 2} />
             <span className="text-[10px] font-bold mt-0.5">ホーム</span>
           </Link>
 
           {/* 宿題 */}
-          {!isRoomPage ? (
-            <button
-              onClick={onOpenHomework}
-              className="flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all text-gray-400 hover:text-green-600"
-            >
-              <BookOpen size={18} strokeWidth={2} />
-              <span className="text-[10px] font-bold mt-0.5">宿題</span>
-            </button>
-          ) : (
-            <Link
-              href="/"
-              className="flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all text-gray-400 hover:text-green-600"
-            >
-              <BookOpen size={18} strokeWidth={2} />
-              <span className="text-[10px] font-bold mt-0.5">宿題</span>
-            </Link>
-          )}
-
-          {/* チャット */}
-          <Link
-            href="/room"
-            className={`flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all
-              ${isRoomPage ? 'text-purple-600 bg-purple-50' : 'text-gray-400 hover:text-purple-600'}`}
+          <button
+            onClick={onOpenHomework}
+            className="flex flex-col items-center justify-center px-2.5 py-1.5 rounded-xl transition-all text-gray-400 hover:text-blue-600"
           >
-            <MessageSquare size={18} strokeWidth={isRoomPage ? 2.5 : 2} />
-            <span className="text-[10px] font-bold mt-0.5">チャット</span>
+            <BookOpen size={17} strokeWidth={2} />
+            <span className="text-[10px] font-bold mt-0.5">宿題</span>
+          </button>
+
+          {/* ツール */}
+          <Link
+            href="/contact"
+            className="flex flex-col items-center justify-center px-2.5 py-1.5 rounded-xl text-gray-400 hover:text-green-600 transition-all"
+          >
+            <Mail size={17} strokeWidth={2} />
+            <span className="text-[10px] font-bold mt-0.5">連絡</span>
           </Link>
 
           {/* 管理 */}
-          {!isRoomPage ? (
-            <button
-              onClick={onOpenAdmin}
-              className="flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all text-gray-400 hover:text-orange-500"
-            >
-              <Settings size={18} strokeWidth={2} />
-              <span className="text-[10px] font-bold mt-0.5">管理</span>
-            </button>
-          ) : (
-            <Link
-              href="/?tab=admin"
-              className="flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all text-gray-400 hover:text-orange-500"
-            >
-              <Settings size={18} strokeWidth={2} />
-              <span className="text-[10px] font-bold mt-0.5">管理</span>
-            </Link>
-          )}
-
-          {/* お問い合わせ */}
-          <Link
-            href="/contact"
-            className="flex flex-col items-center justify-center px-3 py-1.5 rounded-xl text-gray-400 hover:text-blue-600 transition-all"
+          <button
+            onClick={onOpenAdmin}
+            className="flex flex-col items-center justify-center px-2.5 py-1.5 rounded-xl transition-all text-gray-400 hover:text-orange-500"
           >
-            <Mail size={18} strokeWidth={2} />
-            <span className="text-[10px] font-bold mt-0.5">連絡</span>
-          </Link>
+            <Settings size={17} strokeWidth={2} />
+            <span className="text-[10px] font-bold mt-0.5">管理</span>
+          </button>
 
         </div>
       </div>
