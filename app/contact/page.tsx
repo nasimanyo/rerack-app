@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Header } from "../../components/Header";
-import { ChevronDown, Mail, MessageCircle, Bug, Sparkles, Shield } from "lucide-react";
+import { ChevronDown, Mail, MessageCircle, Bug, Sparkles, Shield, Smartphone } from "lucide-react";
 
 const faqs = [
   {
@@ -10,14 +10,28 @@ const faqs = [
     color: "text-blue-500",
     bg: "bg-blue-50",
     q: "re!RACKはどんなサービスですか？",
-    a: "クラスの宿題・持ち物・お知らせを共有するための学校向けアプリです。卒業カウントダウンやチャット機能（re!Room）も搭載しています。",
+    a: "クラスの宿題・持ち物・お知らせを共有するための学校向けアプリです。卒業カウントダウンや定期テスト管理、時間割など中学生向けの機能も搭載しています。",
+  },
+  {
+    icon: <Smartphone size={15} />,
+    color: "text-orange-500",
+    bg: "bg-orange-50",
+    q: "メモ（付箋）のデータはどこに保存されますか？",
+    a: "付箋メモはお使いのブラウザのメモリ上にのみ存在します。ページを閉じると消えてしまいます。他の端末・他のユーザーとは共有されず、あくまで自分だけのメモとしてご利用ください。",
+  },
+  {
+    icon: <Smartphone size={15} />,
+    color: "text-purple-500",
+    bg: "bg-purple-50",
+    q: "時間割のデータはどこに保存されますか？",
+    a: "時間割はお使いのデバイス（ブラウザのlocalStorage）に保存されます。そのため、スマートフォンとPCなど別の端末からアクセスしても同じ時間割は表示されません。また他のユーザーとは共有されません。",
   },
   {
     icon: <MessageCircle size={15} />,
     color: "text-blue-500",
     bg: "bg-blue-50",
-    q: "re!Roomのデータはどこに保存されますか？",
-    a: "re!Roomのメッセージ・ルーム情報はお使いのブラウザのlocalStorageに保存されます。他の端末や別ブラウザからは見えません。",
+    q: "宿題・持ち物・お知らせのデータはどこに保存されますか？",
+    a: "宿題・持ち物・お知らせのデータはSupabase（外部データベース）に保存されており、同じクラスのみんなが同じ内容を閲覧できます。書き込みには管理者パスワードが必要です。",
   },
   {
     icon: <Sparkles size={15} />,
@@ -45,7 +59,7 @@ const faqs = [
     color: "text-green-500",
     bg: "bg-green-50",
     q: "個人情報はどう扱われますか？",
-    a: "re!RACKはユーザーの個人情報をサーバーに収集・保存しません。宿題データはSupabase（外部DB）に、チャットデータはブラウザのみに保存されます。",
+    a: "re!RACKはユーザーの個人情報をサーバーに収集・保存しません。宿題データはSupabase（外部DB）に、時間割や目標などはブラウザのみに保存されます。",
   },
 ];
 
@@ -133,7 +147,6 @@ export default function ContactPage() {
             Q&Aで解決しない場合や、バグ報告・機能リクエストは以下のアドレスへどうぞ。
           </p>
 
-          {/* メールアドレス直書き */}
           <div className="flex items-center gap-3 bg-gray-50 border-2 border-gray-200 rounded-2xl px-5 py-4">
             <Mail size={16} className="text-gray-400 flex-shrink-0" />
             <span className="font-black text-gray-800 text-sm tracking-tight select-all">
