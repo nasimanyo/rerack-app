@@ -389,6 +389,10 @@ export default function Home() {
   });
   const [editingTimetable, setEditingTimetable] = useState(false);
   const [tempTimetable, setTempTimetable] = useState(timetable);
+  const [timetablePwModalOpen, setTimetablePwModalOpen] = useState(false);
+  const [timetablePwInput, setTimetablePwInput] = useState("");
+  const [timetablePwError, setTimetablePwError] = useState("");
+  const TIMETABLE_PASSWORD = "Nasi-man-yo1209";
 
   // 日付判定
   const isGraduationDay = todayStr === "2026-03-24";
@@ -761,7 +765,7 @@ export default function Home() {
                 <h2 className="font-black text-gray-800">📅 時間割</h2>
                 {!editingTimetable ? (
                   <button
-                    onClick={() => { setTempTimetable(timetable); setEditingTimetable(true); }}
+                    onClick={() => { setTimetablePwInput(""); setTimetablePwError(""); setTimetablePwModalOpen(true); }}
                     className="text-xs bg-black text-white px-3 py-1.5 rounded-xl font-bold"
                   >編集</button>
                 ) : (
@@ -876,6 +880,67 @@ export default function Home() {
           </div>
         )}
       </main>
+
+      {/* ══ 時間割パスワードモーダル ══ */}
+      {timetablePwModalOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setTimetablePwModalOpen(false); }}
+        >
+          <div className="bg-white rounded-[2rem] shadow-2xl p-8 w-full max-w-sm border-4 border-gray-100 animate-in zoom-in duration-200">
+            <span className="text-3xl block text-center mb-4">🔒</span>
+            <h3 className="text-lg font-black text-center mb-2">時間割を編集</h3>
+            <p className="text-xs text-gray-400 text-center mb-5">パスワードを入力してください</p>
+            <input
+              type="password"
+              value={timetablePwInput}
+              onChange={(e) => { setTimetablePwInput(e.target.value); setTimetablePwError(""); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  if (timetablePwInput === TIMETABLE_PASSWORD) {
+                    setTimetablePwModalOpen(false);
+                    setTempTimetable(timetable);
+                    setEditingTimetable(true);
+                  } else {
+                    setTimetablePwError("パスワードが違います");
+                    setTimetablePwInput("");
+                  }
+                }
+              }}
+              placeholder="パスワードを入力"
+              autoFocus
+              className="w-full p-4 rounded-2xl border-2 border-gray-100 mb-2 text-center font-bold focus:border-black outline-none"
+            />
+            {timetablePwError && (
+              <p className="text-xs text-red-500 text-center mb-3 font-bold">{timetablePwError}</p>
+            )}
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => setTimetablePwModalOpen(false)}
+                className="flex-1 py-3 rounded-2xl border-2 border-gray-200 font-black text-gray-500 hover:bg-gray-50 transition"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={() => {
+                  if (timetablePwInput === TIMETABLE_PASSWORD) {
+                    setTimetablePwModalOpen(false);
+                    setTempTimetable(timetable);
+                    setEditingTimetable(true);
+                  } else {
+                    setTimetablePwError("パスワードが違います");
+                    setTimetablePwInput("");
+                  }
+                }}
+                className="flex-1 py-3 rounded-2xl bg-black text-white font-black shadow-lg hover:bg-gray-800 active:scale-95 transition"
+              >
+                認証する
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
