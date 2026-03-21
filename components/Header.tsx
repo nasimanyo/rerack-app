@@ -20,13 +20,11 @@ export const Header = ({ onGoToToday, onOpenAdmin, onOpenHomework }: HeaderProps
 
         {/* ロゴ */}
         <Link href="/" onClick={onGoToToday} className="flex items-center gap-2 flex-shrink-0">
-          <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-sm">
-            <span className="text-white font-black text-xs">R</span>
+          <div className="w-8 h-8 rounded-lg overflow-hidden shadow-sm flex items-center justify-center bg-white border border-gray-100">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/favicon.ico" alt="re!RACK" width={28} height={28} style={{ objectFit: "contain" }} />
           </div>
           <h1 className="text-base font-extrabold tracking-tighter text-gray-800">re!RACK</h1>
-          <span className="text-[10px] font-black text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded-lg border border-blue-200">
-            中学生
-          </span>
         </Link>
 
         {/* ナビ */}

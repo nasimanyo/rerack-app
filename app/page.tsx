@@ -554,7 +554,7 @@ export default function Home() {
             {/* メインカード */}
             <div className="bg-white p-6 rounded-[2rem] shadow-xl border-[3px] border-black text-center">
               <p className="text-xs font-black text-gray-400 tracking-[0.3em] uppercase mb-1">
-                re!RACK for 中学生
+                re!RACK
               </p>
               <h1 className="text-xl font-black text-gray-700 mb-3">
                 {format(today, "yyyy年 M月d日(E)", { locale: ja })}
