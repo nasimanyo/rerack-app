@@ -405,7 +405,7 @@ export default function Home() {
           fontSize:15, fontWeight:800, letterSpacing:1.5,
           boxShadow:"0 4px 20px rgba(0,0,0,0.1)",
         }}>
-          ご卒業おめでとうございます
+          いやぁマジで卒業おめでとうだよね。今後もre!RACKよろしくねん
         </div>
       )}
 
