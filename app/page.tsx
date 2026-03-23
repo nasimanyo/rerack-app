@@ -38,15 +38,111 @@ function isGradDay() {
 
 // ─── Confetti ────────────────────────────────────────────
 function Confetti() {
-  const cols = ["#f87171","#fbbf24","#34d399","#60a5fa","#a78bfa","#f472b6"];
+  const petalCols = ["#fda4af", "#fbcfe8", "#fecdd3", "#f9a8d4", "#fda4af", "#fce7f3"];
+  const sparkleCols = ["#fff7ed", "#fef3c7", "#fde68a", "#ffffff"];
+  const petals = Array.from({ length: 130 }, (_, i) => {
+    const left = Math.random() * 100;
+    const delay = Math.random() * 6;
+    const duration = 7 + Math.random() * 6;
+    const drift = -70 + Math.random() * 140;
+    const sway = 18 + Math.random() * 34;
+    const size = 8 + Math.random() * 11;
+    const rotate = Math.random() * 360;
+    const blur = Math.random() > 0.78 ? 0.8 : 0;
+    const opacity = 0.5 + Math.random() * 0.5;
+    const col = petalCols[i % petalCols.length];
+    return { i, left, delay, duration, drift, sway, size, rotate, blur, opacity, col };
+  });
+
+  const sparkles = Array.from({ length: 22 }, (_, i) => {
+    const left = Math.random() * 100;
+    const top = 18 + Math.random() * 64;
+    const delay = Math.random() * 3;
+    const duration = 1.6 + Math.random() * 1.8;
+    const size = 2 + Math.random() * 3.5;
+    const col = sparkleCols[i % sparkleCols.length];
+    return { i, left, top, delay, duration, size, col };
+  });
+
   return (
-    <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:9999, overflow:"hidden" }}>
-      {Array.from({length:55},(_,i)=>{
-        const l = Math.random()*100, d = Math.random()*5, dur = 3+Math.random()*3;
-        const col = cols[i%cols.length], s = 7+Math.random()*7;
-        return <div key={i} style={{ position:"absolute", left:`${l}%`, top:"-16px", width:s, height:s*0.55, background:col, borderRadius:2, animation:`cf ${dur}s ${d}s linear infinite` }}/>;
-      })}
-      <style>{`@keyframes cf{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:.2}}`}</style>
+    <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 9999, overflow: "hidden" }}>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "radial-gradient(circle at 50% -10%, rgba(255,255,255,0.22), transparent 55%)",
+        }}
+      />
+
+      {petals.map((p) => (
+        <div
+          key={`petal-${p.i}`}
+          style={{
+            position: "absolute",
+            left: `${p.left}%`,
+            top: "-24px",
+            width: p.size,
+            height: p.size * 0.72,
+            background: `linear-gradient(130deg, #ffffffb0, ${p.col})`,
+            borderRadius: "70% 40% 70% 45%",
+            transform: `rotate(${p.rotate}deg)`,
+            opacity: p.opacity,
+            filter: p.blur ? `blur(${p.blur}px)` : "none",
+            boxShadow: "inset 0 0 4px rgba(255,255,255,0.45), 0 1px 2px rgba(219,39,119,0.2)",
+            animation: `petalFall ${p.duration}s ${p.delay}s linear infinite, petalSway ${2.2 + (p.i % 4) * 0.45}s ${p.delay}s ease-in-out infinite alternate`,
+            ["--drift" as any]: `${p.drift}px`,
+            ["--sway" as any]: `${p.sway}px`,
+          }}
+        />
+      ))}
+
+      {sparkles.map((s) => (
+        <div
+          key={`sparkle-${s.i}`}
+          style={{
+            position: "absolute",
+            left: `${s.left}%`,
+            top: `${s.top}%`,
+            width: s.size,
+            height: s.size,
+            borderRadius: "50%",
+            background: s.col,
+            opacity: 0.8,
+            boxShadow: `0 0 ${s.size * 4}px ${s.col}`,
+            animation: `sparkle ${s.duration}s ${s.delay}s ease-in-out infinite`,
+          }}
+        />
+      ))}
+
+      <style>{`
+        @keyframes petalFall {
+          0% {
+            transform: translate3d(0, 0, 0) rotate(0deg);
+            opacity: 0;
+          }
+          8% {
+            opacity: 1;
+          }
+          100% {
+            transform: translate3d(var(--drift), 115vh, 0) rotate(960deg);
+            opacity: 0.25;
+          }
+        }
+        @keyframes petalSway {
+          0% { margin-left: calc(var(--sway) * -0.5); }
+          100% { margin-left: calc(var(--sway) * 0.5); }
+        }
+        @keyframes sparkle {
+          0%, 100% {
+            transform: scale(0.4);
+            opacity: 0.05;
+          }
+          45% {
+            transform: scale(1.3);
+            opacity: 0.95;
+          }
+        }
+      `}</style>
     </div>
   );
 }
