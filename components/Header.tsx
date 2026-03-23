@@ -213,12 +213,7 @@ export const Header = ({ onGoToToday, onOpenAdmin, onOpenHomework }: HeaderProps
                 <span className="rr-lbl">宿題</span>
               </Link>
             )}
-
-            <Link href="/room" className={`rr-link ${isRoom ? 'on' : ''}`}>
-              {Icons.chat}
-              <span className="rr-lbl">チャット</span>
-            </Link>
-
+          
             {!isRoom ? (
               <button onClick={onOpenAdmin} className="rr-link">
                 {Icons.settings}

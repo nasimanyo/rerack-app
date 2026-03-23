@@ -3,7 +3,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "re!RACK | 中学生のための連絡帳",
+  title: "re!RACK",
   description: "宿題・連絡・予定を管理するアプリ",
 };
 
