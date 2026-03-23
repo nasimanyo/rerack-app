@@ -1,11 +1,10 @@
 // app/layout.tsx
 import "./globals.css";
 import type { Metadata } from "next";
-import AdFixedSides from "@/components/AdFixedSides";
 
 export const metadata: Metadata = {
-  title: "re!RACK | 卒業カウントダウン",
-  description: "卒業までの宿題と予定を管理するアプリ",
+  title: "re!RACK | 中学生のための連絡帳",
+  description: "宿題・連絡・予定を管理するアプリ",
 };
 
 export default function RootLayout({
@@ -15,15 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body>
-        {/* メイン（常に中央） */}
-        <main className="min-h-screen flex justify-center p-6">
-          <div className="w-full max-w-3xl">
-            {children}
-          </div>
+      <body style={{ margin: 0, padding: 0 }}>
+        <main style={{ minHeight: "100vh" }}>
+          {children}
         </main>
-
-        <AdFixedSides />
       </body>
     </html>
   );

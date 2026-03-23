@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, BookOpen, Wrench, Settings, Mail } from 'lucide-react';
+import { Home, BookOpen, MessageSquare, Settings, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -12,65 +12,148 @@ interface HeaderProps {
 
 export const Header = ({ onGoToToday, onOpenAdmin, onOpenHomework }: HeaderProps) => {
   const pathname = usePathname();
-  const isHome = pathname === '/';
+  const isRoomPage = pathname === '/room';
+  const isContactPage = pathname === '/contact';
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md border-b border-gray-200 z-40 shadow-sm">
-      <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between gap-2">
+    <nav style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      background: "rgba(255,255,255,0.95)",
+      backdropFilter: "blur(12px)",
+      borderBottom: "1px solid rgba(0,0,0,0.06)",
+      zIndex: 100,
+      height: 56,
+    }}>
+      <div style={{
+        maxWidth: 680,
+        margin: "0 auto",
+        padding: "0 16px",
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}>
 
-        {/* ロゴ */}
-        <Link href="/" onClick={onGoToToday} className="flex items-center gap-2 flex-shrink-0">
-          <div className="w-8 h-8 rounded-lg overflow-hidden shadow-sm flex items-center justify-center bg-white border border-gray-100">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/favicon.ico" alt="re!RACK" width={28} height={28} style={{ objectFit: "contain" }} />
+        {/* Logo */}
+        <Link
+          href="/"
+          onClick={onGoToToday}
+          style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}
+        >
+          <div style={{
+            width: 30,
+            height: 30,
+            background: "#111",
+            borderRadius: 9,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
+            <span style={{ color: "#fff", fontWeight: 900, fontSize: 12, letterSpacing: -0.5 }}>re!</span>
           </div>
-          <h1 className="text-base font-extrabold tracking-tighter text-gray-800">re!RACK</h1>
+          <span style={{ fontSize: 15, fontWeight: 800, color: "#111", letterSpacing: -0.5 }}>
+            RACK
+          </span>
         </Link>
 
-        {/* ナビ */}
-        <div className="flex items-center gap-0.5">
+        {/* Nav links */}
+        <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
 
-          {/* ホーム */}
-          <Link
+          {/* Home */}
+          <NavBtn
             href="/"
+            label="ホーム"
+            icon={<Home size={16} strokeWidth={2.5} />}
+            active={pathname === "/" && !isRoomPage}
             onClick={onGoToToday}
-            className={`flex flex-col items-center justify-center px-2.5 py-1.5 rounded-xl transition-all ${
-              isHome ? 'text-black bg-gray-100' : 'text-gray-400 hover:text-black'
-            }`}
-          >
-            <Home size={17} strokeWidth={isHome ? 2.5 : 2} />
-            <span className="text-[10px] font-bold mt-0.5">ホーム</span>
-          </Link>
+          />
 
-          {/* 宿題 */}
-          <button
-            onClick={onOpenHomework}
-            className="flex flex-col items-center justify-center px-2.5 py-1.5 rounded-xl transition-all text-gray-400 hover:text-blue-600"
-          >
-            <BookOpen size={17} strokeWidth={2} />
-            <span className="text-[10px] font-bold mt-0.5">宿題</span>
-          </button>
+          {/* Homework */}
+          {!isRoomPage ? (
+            <button
+              onClick={onOpenHomework}
+              style={navBtnStyle(false)}
+            >
+              <BookOpen size={16} strokeWidth={2} />
+              <span style={{ fontSize: 10, fontWeight: 600 }}>宿題</span>
+            </button>
+          ) : (
+            <NavBtn href="/" label="宿題" icon={<BookOpen size={16} strokeWidth={2} />} active={false} />
+          )}
 
-          {/* ツール */}
-          <Link
+          {/* Chat */}
+          <NavBtn
+            href="/room"
+            label="チャット"
+            icon={<MessageSquare size={16} strokeWidth={isRoomPage ? 2.5 : 2} />}
+            active={isRoomPage}
+          />
+
+          {/* Admin */}
+          {!isRoomPage ? (
+            <button
+              onClick={onOpenAdmin}
+              style={navBtnStyle(false)}
+            >
+              <Settings size={16} strokeWidth={2} />
+              <span style={{ fontSize: 10, fontWeight: 600 }}>管理</span>
+            </button>
+          ) : (
+            <NavBtn href="/?tab=admin" label="管理" icon={<Settings size={16} strokeWidth={2} />} active={false} />
+          )}
+
+          {/* Contact */}
+          <NavBtn
             href="/contact"
-            className="flex flex-col items-center justify-center px-2.5 py-1.5 rounded-xl text-gray-400 hover:text-green-600 transition-all"
-          >
-            <Mail size={17} strokeWidth={2} />
-            <span className="text-[10px] font-bold mt-0.5">連絡</span>
-          </Link>
-
-          {/* 管理 */}
-          <button
-            onClick={onOpenAdmin}
-            className="flex flex-col items-center justify-center px-2.5 py-1.5 rounded-xl transition-all text-gray-400 hover:text-orange-500"
-          >
-            <Settings size={17} strokeWidth={2} />
-            <span className="text-[10px] font-bold mt-0.5">管理</span>
-          </button>
-
+            label="連絡"
+            icon={<Mail size={16} strokeWidth={2} />}
+            active={isContactPage}
+          />
         </div>
       </div>
     </nav>
   );
 };
+
+function navBtnStyle(active: boolean): React.CSSProperties {
+  return {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 2,
+    padding: "6px 10px",
+    borderRadius: 10,
+    border: "none",
+    cursor: "pointer",
+    background: active ? "#111" : "transparent",
+    color: active ? "#fff" : "#888",
+    transition: "all 0.15s",
+    fontFamily: "inherit",
+  };
+}
+
+function NavBtn({ href, label, icon, active, onClick }: {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  active: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      style={{
+        ...navBtnStyle(active),
+        textDecoration: "none",
+      }}
+    >
+      {icon}
+      <span style={{ fontSize: 10, fontWeight: 600 }}>{label}</span>
+    </Link>
+  );
+}
