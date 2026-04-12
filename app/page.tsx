@@ -38,6 +38,19 @@ export default function ServiceClosed() {
           </p>
         </div>
 
+        {/* クレジット */}
+        <div className="mt-10 border-t pt-6 text-sm text-gray-600 space-y-1">
+          <p className="font-semibold text-gray-700">運営・制作</p>
+          <p>コーディングアシスト: TAM様</p>
+          <p>デザイン・UIアシスト: しゅんさく様</p>
+          <p>運営募集のご協力: gamecreatorscamp (集英社)</p>
+          <p>database: supabase</p>
+          <p>デプロイ: github・vercel</p>
+
+          <p className="pt-3 font-semibold">Special Thanks</p>
+          <p>ご利用いただいた皆様</p>
+        </div>
+
         <div className="mt-8 text-right text-gray-600">
           <p>re!RACK 運営・管理者</p>
           <p className="font-semibold">なしまん</p>
